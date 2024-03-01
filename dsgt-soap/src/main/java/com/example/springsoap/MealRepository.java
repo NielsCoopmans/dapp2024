@@ -1,17 +1,15 @@
 package com.example.springsoap;
 
+import io.foodmenu.gt.webservice.Meal;
+import io.foodmenu.gt.webservice.Mealtype;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+
 import javax.annotation.PostConstruct;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
-
-
-import io.foodmenu.gt.webservice.*;
-
-
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 @Component
 public class MealRepository {
@@ -25,6 +23,7 @@ public class MealRepository {
         a.setDescription("Steak with fries");
         a.setMealtype(Mealtype.MEAT);
         a.setKcal(1100);
+        a.setPrice(23);
 
 
         meals.put(a.getName(), a);
@@ -34,6 +33,7 @@ public class MealRepository {
         b.setDescription("Portobello Mushroom Burger");
         b.setMealtype(Mealtype.VEGAN);
         b.setKcal(637);
+        b.setPrice(25.8);
 
 
         meals.put(b.getName(), b);
@@ -43,6 +43,7 @@ public class MealRepository {
         c.setDescription("Fried fish with chips");
         c.setMealtype(Mealtype.FISH);
         c.setKcal(950);
+        c.setPrice(28.78);
 
 
         meals.put(c.getName(), c);
@@ -61,6 +62,14 @@ public class MealRepository {
         var values = meals.values();
         return values.stream().max(Comparator.comparing(Meal::getKcal)).orElseThrow(NoSuchElementException::new);
 
+    }
+
+    public Meal findCheapestMeal() {
+        if (meals == null) return null;
+        if(meals.size() == 0) return null;
+
+        var values = meals.values();
+        return values.stream().min(Comparator.comparing(Meal::getPrice)).orElseThrow(NoSuchElementException::new);
     }
 
 

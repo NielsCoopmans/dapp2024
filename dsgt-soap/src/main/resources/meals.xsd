@@ -32,6 +32,20 @@
         </xs:complexType>
     </xs:element>
 
+    <xs:element name="getCheapestMealRequest">
+        <xs:complexType>
+            <xs:sequence></xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="getCheapestMealResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="meal" type="tns:meal"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
 
     <xs:complexType name="meal">
         <xs:sequence>
@@ -39,6 +53,7 @@
             <xs:element name="kcal" type="xs:int"/>
             <xs:element name="description" type="xs:string"/>
             <xs:element name="mealtype" type="tns:mealtype"/>
+            <xs:element name="price" type="xs:double"/>
         </xs:sequence>
     </xs:complexType>
 
