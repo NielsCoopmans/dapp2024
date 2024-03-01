@@ -17,7 +17,6 @@
         </xs:complexType>
     </xs:element>
 
-
     <xs:element name="getLargestMealRequest">
         <xs:complexType>
             <xs:sequence></xs:sequence>
@@ -31,6 +30,7 @@
             </xs:sequence>
         </xs:complexType>
     </xs:element>
+
 
     <xs:element name="getCheapestMealRequest">
         <xs:complexType>
@@ -47,6 +47,22 @@
     </xs:element>
 
 
+    <xs:element name="addOrderRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="order" type="tns:order"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="addOrderResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="orderConfirmation" type="tns:orderConfirmation"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
     <xs:complexType name="meal">
         <xs:sequence>
             <xs:element name="name" type="xs:string"/>
@@ -57,8 +73,6 @@
         </xs:sequence>
     </xs:complexType>
 
-
-
     <xs:simpleType name="mealtype">
         <xs:restriction base="xs:string">
             <xs:enumeration value="vegan"/>
@@ -67,4 +81,19 @@
             <xs:enumeration value="fish"/>
         </xs:restriction>
     </xs:simpleType>
+
+    <xs:complexType name="order">
+        <xs:sequence>
+            <xs:element name="address" type="xs:string"/>
+            <xs:element name="mealnames" type="xs:string" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="orderConfirmation">
+        <xs:sequence>
+            <xs:element name="status" type="xs:boolean"/>
+            <xs:element name="order" type="tns:order"/>
+        </xs:sequence>
+    </xs:complexType>
+
 </xs:schema>

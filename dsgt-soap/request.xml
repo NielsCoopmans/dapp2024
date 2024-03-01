@@ -3,7 +3,7 @@
     <soapenv:Header/>
     <soapenv:Body>
         <gs:getMealRequest>
-            <gs:name>Portobello</gs:name>
+            <gs:name>Portobel</gs:name>
         </gs:getMealRequest>
     </soapenv:Body>
 </soapenv:Envelope>

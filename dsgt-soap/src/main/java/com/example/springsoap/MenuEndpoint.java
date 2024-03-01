@@ -48,5 +48,13 @@ public class MenuEndpoint {
         return response;
     }
 
+    @PayloadRoot(namespace = NAMESPACE_URI, localPart = "addOrderRequest")
+    @ResponsePayload
+    public AddOrderResponse addOrderResponse(@RequestPayload AddOrderRequest request) {
+        AddOrderResponse response = new AddOrderResponse();
+        response.setOrderConfirmation(mealrepo.addOrder(request.getOrder()));
+
+        return response;
+    }
 
 }

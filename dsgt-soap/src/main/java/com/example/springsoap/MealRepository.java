@@ -2,18 +2,18 @@ package com.example.springsoap;
 
 import io.foodmenu.gt.webservice.Meal;
 import io.foodmenu.gt.webservice.Mealtype;
+import io.foodmenu.gt.webservice.Order;
+import io.foodmenu.gt.webservice.OrderConfirmation;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 @Component
 public class MealRepository {
     private static final Map<String, Meal> meals = new HashMap<String, Meal>();
+    private static final List<Order> orders = new LinkedList<>();
 
     @PostConstruct
     public void initData() {
@@ -72,5 +72,20 @@ public class MealRepository {
         return values.stream().min(Comparator.comparing(Meal::getPrice)).orElseThrow(NoSuchElementException::new);
     }
 
+    public OrderConfirmation addOrder(Order order) {
+        orders.add(order);
+        OrderConfirmation confirmation = new OrderConfirmation();
+
+        try {
+            confirmation.setOrder(order);
+        }
+        catch (Exception e){
+            confirmation.setStatus(false);
+            return confirmation;
+        }
+        confirmation.setStatus(true);
+
+        return  confirmation;
+    }
 
 }
