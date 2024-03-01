@@ -1,0 +1,12 @@
+/home/niels/dapp2024/dsgt-soap/src/main/java/com/example/springsoap/MenuEndpoint.java
+/home/niels/dapp2024/dsgt-soap/target/generated-sources/jaxb/io/foodmenu/gt/webservice/Meal.java
+/home/niels/dapp2024/dsgt-soap/target/generated-sources/jaxb/io/foodmenu/gt/webservice/Mealtype.java
+/home/niels/dapp2024/dsgt-soap/target/generated-sources/jaxb/io/foodmenu/gt/webservice/package-info.java
+/home/niels/dapp2024/dsgt-soap/target/generated-sources/jaxb/io/foodmenu/gt/webservice/GetLargestMealRequest.java
+/home/niels/dapp2024/dsgt-soap/target/generated-sources/jaxb/io/foodmenu/gt/webservice/GetMealRequest.java
+/home/niels/dapp2024/dsgt-soap/target/generated-sources/jaxb/io/foodmenu/gt/webservice/GetMealResponse.java
+/home/niels/dapp2024/dsgt-soap/src/main/java/com/example/springsoap/MealRepository.java
+/home/niels/dapp2024/dsgt-soap/target/generated-sources/jaxb/io/foodmenu/gt/webservice/GetLargestMealResponse.java
+/home/niels/dapp2024/dsgt-soap/target/generated-sources/jaxb/io/foodmenu/gt/webservice/ObjectFactory.java
+/home/niels/dapp2024/dsgt-soap/src/main/java/com/example/springsoap/SpringSoapApplication.java
+/home/niels/dapp2024/dsgt-soap/src/main/java/com/example/springsoap/WebServiceConfig.java
