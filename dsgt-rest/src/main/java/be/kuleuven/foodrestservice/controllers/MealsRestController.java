@@ -42,6 +42,12 @@ public class MealsRestController {
                 linkTo(methodOn(MealsRestController.class).getMeals()).withSelfRel());
     }
 
+    @GetMapping("/rest/cheapest")
+    EntityModel<Meal> getCheapestMeal() {
+        Meal meal = mealsRepository.getCheapestMeal();
+        return mealToEntityModel(meal.getId(),meal);
+    }
+
     private EntityModel<Meal> mealToEntityModel(String id, Meal meal) {
         return EntityModel.of(meal,
                 linkTo(methodOn(MealsRestController.class).getMealById(id)).withSelfRel(),
