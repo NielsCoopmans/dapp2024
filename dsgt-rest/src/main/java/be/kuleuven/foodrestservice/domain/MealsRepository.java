@@ -1,5 +1,7 @@
 package be.kuleuven.foodrestservice.domain;
 
+import net.minidev.json.JSONObject;
+import netscape.javascript.JSObject;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
@@ -45,6 +47,17 @@ public class MealsRepository {
         meals.put(c.getId(), c);
     }
 
+    public void addMeal(JSONObject newMealJSON) {
+        Meal newMeal = new Meal();
+        newMeal.setName(newMealJSON.get("name").toString());
+        newMeal.setId(UUID.fromString(newMeal.getName()).toString());
+        newMeal.setDescription(newMealJSON.get("description").toString());
+        newMeal.setMealType(MealType.fromValue(newMealJSON.get("mealType").toString()));
+        newMeal.setKcal(Integer.valueOf(newMealJSON.get("kcal").toString()));
+        newMeal.setPrice(Double.valueOf(newMealJSON.get("price").toString()));
+        meals.put(newMeal.getId(),newMeal);
+    }
+
     public Optional<Meal> findMeal(String id) {
         Assert.notNull(id, "The meal id must not be null");
         Meal meal = meals.get(id);
@@ -61,5 +74,7 @@ public class MealsRepository {
                 .min(Comparator.comparing(Meal::getPrice))
                 .orElse(null);
     }
+
+
 
 }

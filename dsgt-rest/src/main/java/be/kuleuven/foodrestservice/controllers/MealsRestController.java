@@ -3,6 +3,8 @@ package be.kuleuven.foodrestservice.controllers;
 import be.kuleuven.foodrestservice.domain.Meal;
 import be.kuleuven.foodrestservice.domain.MealsRepository;
 import be.kuleuven.foodrestservice.exceptions.MealNotFoundException;
+import net.minidev.json.JSONObject;
+import netscape.javascript.JSObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -20,6 +22,11 @@ public class MealsRestController {
     @Autowired
     MealsRestController(MealsRepository mealsRepository) {
         this.mealsRepository = mealsRepository;
+    }
+
+    @GetMapping("/rest/meals/")
+     void addMeal(@PathVariable JSONObject meal) {
+        mealsRepository.addMeal(meal);
     }
 
     @GetMapping("/rest/meals/{id}")
@@ -42,7 +49,7 @@ public class MealsRestController {
                 linkTo(methodOn(MealsRestController.class).getMeals()).withSelfRel());
     }
 
-    @GetMapping("/rest/cheapest")
+    @GetMapping("/rest/meals/cheapest")
     EntityModel<Meal> getCheapestMeal() {
         Meal meal = mealsRepository.getCheapestMeal();
         return mealToEntityModel(meal.getId(),meal);

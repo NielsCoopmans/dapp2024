@@ -26,7 +26,7 @@ public class MealsRestRpcStyleController {
         return meal.orElseThrow(() -> new MealNotFoundException(id));
     }
 
-    @GetMapping("/restrpc/cheapest")
+    @GetMapping("/restrpc/meals/cheapest")
     Meal getCheapestMeal() {
         return mealsRepository.getCheapestMeal();
     }
