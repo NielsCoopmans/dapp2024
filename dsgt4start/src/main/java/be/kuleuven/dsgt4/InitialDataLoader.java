@@ -41,4 +41,5 @@ public class InitialDataLoader {
             e.printStackTrace(); // Handle the exception appropriately in production
         }
     }
+
 }
