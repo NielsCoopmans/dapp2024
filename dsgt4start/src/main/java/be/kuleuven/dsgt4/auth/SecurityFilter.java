@@ -26,7 +26,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         // TODO: (level 1) decode Identity Token and assign correct email and role
         // TODO: (level 2) verify Identity Token
 
-        var user = new User("test@example.com", "manager");
+        var user = new User("nielscoopmans@gmail.com", "manager");
         SecurityContext context = SecurityContextHolder.getContext();
         context.setAuthentication(new FirebaseAuthentication(user));
 
