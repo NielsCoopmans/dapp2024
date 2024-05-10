@@ -25,7 +25,7 @@ public class Dsgt4Application {
 	public static void main(String[] args)  {
 		//System.setProperty("server.port", System.getenv().getOrDefault("PORT", "8080"));
 		SpringApplication.run(Dsgt4Application.class, args);
-
+		new InitialDataLoader().init();
 }
 
 	@Bean
