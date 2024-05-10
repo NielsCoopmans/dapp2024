@@ -56,7 +56,7 @@ function wireGuiUpEvents() {
     signInWithEmailAndPassword(getAuth(), email.value, password.value)
       .then(function () {
         console.log("signedin");
-        window.location.href = "/webshop.html";
+        window.location.href = "./html/webshop.html";
       })
       .catch(function (error) {
         // Show an error message
