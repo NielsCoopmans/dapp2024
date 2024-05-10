@@ -48,15 +48,15 @@ function wireGuiUpEvents() {
   var signInButton = document.getElementById("btnSignIn");
   var signUpButton = document.getElementById("btnSignUp");
   var logoutButton = document.getElementById("btnLogout");
+  var testButton = document.getElementById("testButton");
 
   // Add event listeners to the sign in and sign up buttons
   signInButton.addEventListener("click", function () {
     // Sign in the user using Firebase's signInWithEmailAndPassword method
-
     signInWithEmailAndPassword(getAuth(), email.value, password.value)
       .then(function () {
-
         console.log("signedin");
+        window.location.href = "./html/webshop.html";
       })
       .catch(function (error) {
         // Show an error message
@@ -68,7 +68,6 @@ function wireGuiUpEvents() {
 
   signUpButton.addEventListener("click", function () {
     // Sign up the user using Firebase's createUserWithEmailAndPassword method
-
     createUserWithEmailAndPassword(getAuth(), email.value, password.value)
       .then(function () {
         console.log("created");
@@ -88,7 +87,13 @@ function wireGuiUpEvents() {
     } catch (err) { }
   });
 
+  // Add event listener to the test button
+  testButton.addEventListener("click", function () {
+    testButton.textContent = 'Clicked';
+    testButton.style.backgroundColor = 'red';
+  });
 }
+
 
 function wireUpAuthChange() {
 
