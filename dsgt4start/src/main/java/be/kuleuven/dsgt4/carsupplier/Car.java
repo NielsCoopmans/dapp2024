@@ -1,5 +1,6 @@
 package be.kuleuven.dsgt4.carsupplier;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class Car {
@@ -91,5 +92,24 @@ public class Car {
                 ", price=" + price +
                 ", description='" + description + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Car car = (Car) o;
+        return Objects.equals(id, car.id) &&
+                Objects.equals(brand, car.brand) &&
+                Objects.equals(model, car.model) &&
+                Objects.equals(color, car.color) &&
+                Objects.equals(year, car.year) &&
+                Objects.equals(price, car.price) &&
+                Objects.equals(description, car.description);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, brand, model, color, year, price, description);
     }
 }
