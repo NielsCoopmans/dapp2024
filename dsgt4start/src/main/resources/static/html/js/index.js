@@ -1,5 +1,5 @@
 import {
-  initializeApp
+  initializeApp,
 } from "https://www.gstatic.com/firebasejs/9.9.4/firebase-app.js";
 import {
   getAuth,
@@ -12,7 +12,7 @@ import {
 // we setup the authentication, and then wire up some key events to event handlers
 setupAuth();
 wireGuiUpEvents();
-wireUpAuthChange();
+//wireUpAuthChange();
 
 //setup authentication with local or cloud configuration. 
 function setupAuth() {
