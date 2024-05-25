@@ -16,9 +16,10 @@ public class Order {
         this.id = id;
     }
 
-    public Order(UUID id, Customer customer, List items){
+    public Order(Customer customer, List items){
         this.customer = customer;
         this.items = items;
+        this.id = UUID.randomUUID();
     }
 
     public List getItems() {

@@ -6,6 +6,7 @@ import com.google.cloud.firestore.Firestore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -39,9 +40,23 @@ public class InitialDataLoader {
             // Add customers to Firestore
             db.collection("customers").document().set(customer1).get();
             db.collection("customers").document().set(customer2).get();
+
+            // Create items
+            Item item1 = new Item("Product 1", 2, 19.99);
+            Item item2 = new Item("Product 2", 1, 99.99);
+            Item item3 = new Item("Product 3", 3, 29.99);
+
+            // Create orders
+            Order order1 = new Order(customer1, List.of(item1, item2));
+            Order order2 = new Order(customer2, List.of(item3));
+
+            // Add orders to Firestore
+            db.collection("orders").document(order1.getId().toString()).set(order1).get();
+            db.collection("orders").document(order2.getId().toString()).set(order2).get();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace(); // Handle the exception appropriately in production
         }
     }
+
 
 }

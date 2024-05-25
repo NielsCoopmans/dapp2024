@@ -7,12 +7,14 @@ import {
   onAuthStateChanged,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  setPersistence,
+  browserSessionPersistence,
 } from "https://www.gstatic.com/firebasejs/9.9.4/firebase-auth.js";
 
 // we setup the authentication, and then wire up some key events to event handlers
 setupAuth();
 wireGuiUpEvents();
-//wireUpAuthChange();
+wireUpAuthChange();
 
 //setup authentication with local or cloud configuration. 
 function setupAuth() {
@@ -34,7 +36,17 @@ function setupAuth() {
   try {
     auth.signOut();
   } catch (err) { }
+  // Enable session persistence
 
+  setPersistence(auth, browserSessionPersistence)
+    .then(() => {
+      // Session persistence successfully set
+      console.log("Session persistence enabled");
+    })
+    .catch((error) => {
+      // Error setting session persistence
+      console.error("Error enabling session persistence:", error);
+    });
   // connect to local emulator when running on localhost
   if (location.hostname === "localhost") {
     connectAuthEmulator(auth, "http://localhost:8082", { disableWarnings: true });
@@ -56,7 +68,7 @@ function wireGuiUpEvents() {
     signInWithEmailAndPassword(getAuth(), email.value, password.value)
       .then(function () {
         console.log("signedin");
-        window.location.href = "./html/webshop.html";
+        //window.location.href = "/html/webshop.html";
       })
       .catch(function (error) {
         // Show an error message
@@ -134,9 +146,46 @@ function wireUpAuthChange() {
 }
 
 function fetchData(token) {
-  getHello(token);
-  whoami(token);
+    fetchOrders(token);
 }
+
+async function fetchOrders(token) {
+  try {
+    const response = await fetch('/api/getAllOrders', {
+      method: 'GET',
+      headers: { Authorization: 'Bearer {token}' }
+    });
+
+    if (response.ok) {
+      const orders = await response.json();
+      displayOrders(orders);
+    } else {
+      console.error('Failed to fetch orders:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+  }
+}
+
+function displayOrders(orders) {
+  const ordersTableBody = document.querySelector('#orders-table tbody');
+  ordersTableBody.innerHTML = '';
+
+  orders.forEach(order => {
+    const row = document.createElement('tr');
+
+    row.innerHTML = `
+      <td>${order.id}</td>
+      <td>${order.customerName}</td>
+      <td>${order.product}</td>
+      <td>${order.quantity}</td>
+      <td>${order.status}</td>
+    `;
+
+    ordersTableBody.appendChild(row);
+  });
+}
+
 function showAuthenticated(username) {
   document.getElementById("namediv").innerHTML = "Hello " + username;
   document.getElementById("logindiv").style.display = "none";
