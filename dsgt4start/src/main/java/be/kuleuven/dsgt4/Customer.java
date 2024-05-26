@@ -1,24 +1,13 @@
 package be.kuleuven.dsgt4;
 
-import java.util.UUID;
-
 public class Customer {
-    private UUID id;
     private String name;
     private String email;
-
-    public Customer(UUID id,String email, String name) {
-        this.id = id;
-        this.email = email;
+    public Customer(){
+    }
+    public Customer(String name,String email) {
         this.name = name;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
+        this.email = email;
     }
 
     public String getName() {

@@ -16,7 +16,7 @@ setupAuth();
 wireGuiUpEvents();
 wireUpAuthChange();
 
-//setup authentication with local or cloud configuration. 
+//setup authentication with local or cloud configuration.
 function setupAuth() {
   let firebaseConfig;
   if (location.hostname === "localhost") {
@@ -136,7 +136,7 @@ function wireUpAuthChange() {
 
       console.log("Token: " + idTokenResult.token);
 
-      //fetch data from server when authentication was successful. 
+      //fetch data from server when authentication was successful.
       var token = idTokenResult.token;
       fetchData(token);
 
@@ -150,6 +150,7 @@ function fetchData(token) {
 }
 
 async function fetchOrders(token) {
+  console.log("fetching orders");
   try {
     const response = await fetch('/api/getAllOrders', {
       method: 'GET',
@@ -168,22 +169,19 @@ async function fetchOrders(token) {
 }
 
 function displayOrders(orders) {
-  const ordersTableBody = document.querySelector('#orders-table tbody');
-  ordersTableBody.innerHTML = '';
+    console.log("displaying orders");
+    const tbody = document.getElementById('orderTable').getElementsByTagName('tbody')[0];
+    console.log(orders);
+    orders.forEach(order => {
+        const row = tbody.insertRow();
 
-  orders.forEach(order => {
-    const row = document.createElement('tr');
+        const cellCustomer = row.insertCell(0);
+        const cellItems = row.insertCell(1);
 
-    row.innerHTML = `
-      <td>${order.id}</td>
-      <td>${order.customerName}</td>
-      <td>${order.product}</td>
-      <td>${order.quantity}</td>
-      <td>${order.status}</td>
-    `;
+        cellCustomer.textContent = order.customer.email;
+        cellItems.textContent = order.items.map(item => item.productName).join(', ');
+    });
 
-    ordersTableBody.appendChild(row);
-  });
 }
 
 function showAuthenticated(username) {

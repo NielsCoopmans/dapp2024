@@ -33,9 +33,9 @@ public class InitialDataLoader {
         try {
 
             // Create two initial customers
-            Customer customer1 = new Customer(UUID.randomUUID(),"Customer 1","customer1@example.com");
+            Customer customer1 = new Customer("Customer 1","customer1@example.com");
 
-            Customer customer2 = new Customer(UUID.randomUUID(),"Customer 2","customer2@example.com");
+            Customer customer2 = new Customer("Customer 2","customer2@example.com");
 
             // Add customers to Firestore
             db.collection("customers").document().set(customer1).get();
@@ -51,8 +51,8 @@ public class InitialDataLoader {
             Order order2 = new Order(customer2, List.of(item3));
 
             // Add orders to Firestore
-            db.collection("orders").document(order1.getId().toString()).set(order1).get();
-            db.collection("orders").document(order2.getId().toString()).set(order2).get();
+            db.collection("orders").document().set(order1).get();
+            db.collection("orders").document().set(order2).get();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace(); // Handle the exception appropriately in production
         }

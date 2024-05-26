@@ -1,15 +1,24 @@
 package be.kuleuven.dsgt4;
 
 import be.kuleuven.dsgt4.auth.WebSecurityConfig;
+import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
+import com.google.cloud.firestore.QuerySnapshot;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.web.bind.annotation.*;
+
+import java.lang.reflect.Type;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 // Add the controller.
@@ -28,7 +37,6 @@ class HelloWorldController {
     @PostMapping("/api/createOrder")
     public Order createOrder(@RequestBody Order order) {
         UUID orderId = UUID.randomUUID();
-        order.setId(orderId); // Set UUID for the order
         db.collection("orders").document(orderId.toString()).set(order);
         return order;
     }
@@ -74,30 +82,57 @@ class HelloWorldController {
 
         List<Customer> customers = new ArrayList<>();
 
-        var query = db.collection("customers").get().get();
 
-        for (QueryDocumentSnapshot document : query.getDocuments()) {
-            customers.add(document.toObject(Customer.class));
+        ApiFuture<QuerySnapshot> query = db.collection("users").get();
+        QuerySnapshot querySnapshot = query.get();
+        List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
+        for (QueryDocumentSnapshot document : documents) {
+            Customer customer = new Customer(document.getString("email"),document.getString("name"));
+            customers.add(customer);
         }
 
         return customers;
     }
 
     @GetMapping("/api/getAllOrders")
-    public @ResponseBody List<Order> getAllOrders() throws InterruptedException, ExecutionException {
-        var user = WebSecurityConfig.getUser();
-        if (!user.isManager()) throw new AuthorizationServiceException("You are not a manager");
+    public ResponseEntity<?> getAllOrders() {
+        Logger logger = LoggerFactory.getLogger(this.getClass());
+        try {
+            // Check user authorization
+            var user = WebSecurityConfig.getUser();
+            if (!user.isManager()) {
+                throw new AuthorizationServiceException("You are not a manager");
+            }
 
-        List<Order> orders = new ArrayList<>();
+            List<Order> orders = new ArrayList<>();
+            ApiFuture<QuerySnapshot> query = db.collection("orders").get();
+            QuerySnapshot querySnapshot = query.get();
+            List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
 
-        var query = db.collection("orders").get().get();
+            Gson gson = new Gson();
+            Type customerType = new TypeToken<Customer>() {}.getType();
+            Type itemListType = new TypeToken<List<Item>>() {}.getType();
 
-        for (QueryDocumentSnapshot document : query.getDocuments()) {
-            orders.add(document.toObject(Order.class));
+            for (QueryDocumentSnapshot document : documents) {
+                Customer customer = gson.fromJson(gson.toJson(document.get("customer")),customerType);
+                List<Item> items = gson.fromJson(gson.toJson(document.get("items")), itemListType);
+                Order order = new Order(customer, items);
+                orders.add(order);
+            }
+
+            return ResponseEntity.ok(orders);
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("Error fetching orders", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching orders: " + e.getMessage());
+        } catch (AuthorizationServiceException e) {
+            logger.error("Authorization error", e);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Authorization error: " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected error", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error: " + e.getMessage());
         }
-
-        return orders;
     }
+
 
     @GetMapping("/api/whoami")
     public User whoami() throws InterruptedException, ExecutionException {
