@@ -59,5 +59,35 @@
     </tbody>
 </table>
 
+<div class="page" id="cardiv">
+    <!-- Car List Section -->
+    <h2>Available Cars</h2>
+    <ul id="car-list"></ul>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetchCarList();
+
+        function fetchCarList() {
+            fetch('/api/broker/cars')
+                .then(response => response.json())
+                .then(cars => {
+                    const carList = document.getElementById('car-list');
+                    carList.innerHTML = ''; // Clear any existing content
+                    cars.forEach(car => {
+                        const li = document.createElement('li');
+                        const a = document.createElement('a');
+                        a.href = `/cars/${car.id}`;
+                        a.textContent = `${car.brand} ${car.model}`;
+                        li.appendChild(a);
+                        carList.appendChild(li);
+                    });
+                })
+                .catch(error => console.error('Error fetching cars:', error));
+        }
+    });
+</script>
+
 </body>
 </html>
