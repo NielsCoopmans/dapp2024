@@ -9,8 +9,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 public class UserMessage {
 
-
-
         private UUID id;
         private LocalDateTime time;
         private String role;

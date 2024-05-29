@@ -3,8 +3,8 @@ package be.kuleuven.dsgt4;
 import java.util.Objects;
 import java.util.UUID;
 
-public class Car {
-    private UUID id;
+public class Car extends Item{
+
     private String brand;
     private String model;
     private String color;
@@ -13,24 +13,18 @@ public class Car {
     private String description;
 
     public Car() {
+        super();
     }
 
-    public Car(UUID id, String brand, String model, String color, int year, double price, String description) {
-        this.id = id;
+    public Car( String brand, String model, String color, int year, double price, String description) {
+        super("car",price);
+
         this.brand = brand;
         this.model = model;
         this.color = color;
         this.year = year;
         this.price = price;
         this.description = description;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
     }
 
     public String getBrand() {
@@ -84,7 +78,6 @@ public class Car {
     @Override
     public String toString() {
         return "Car{" +
-                "id=" + id +
                 ", brand='" + brand + '\'' +
                 ", model='" + model + '\'' +
                 ", color='" + color + '\'' +
@@ -99,8 +92,7 @@ public class Car {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Car car = (Car) o;
-        return Objects.equals(id, car.id) &&
-                Objects.equals(brand, car.brand) &&
+        return Objects.equals(brand, car.brand) &&
                 Objects.equals(model, car.model) &&
                 Objects.equals(color, car.color) &&
                 Objects.equals(year, car.year) &&
@@ -110,6 +102,6 @@ public class Car {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, brand, model, color, year, price, description);
+        return Objects.hash( brand, model, color, year, price, description);
     }
 }

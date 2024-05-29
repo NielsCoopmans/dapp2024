@@ -1,14 +1,19 @@
 package be.kuleuven.dsgt4;
 
+import java.util.Objects;
+
 public class Item {
+
     private String productName;
-    private int quantity;
     private double price;
 
-    public Item(String productName, int quantity, double price) {
+    public Item(String productName, double price) {
         this.productName = productName;
-        this.quantity = quantity;
         this.price = price;
+    }
+
+    public Item() {
+
     }
 
     public String getProductName() {
@@ -19,19 +24,32 @@ public class Item {
         this.productName = productName;
     }
 
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
     public double getPrice() {
         return price;
     }
 
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    @Override
+    public String toString() {
+        return "Item{" +
+                ", productName='" + productName + '\'' +
+                ", price=" + price +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Item item = (Item) o;
+        return Double.compare(price, item.price) == 0 && Objects.equals(productName, item.productName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(productName, price);
     }
 }

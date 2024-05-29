@@ -1,6 +1,7 @@
 package be.kuleuven.dsgt4;
 
 import be.kuleuven.dsgt4.auth.WebSecurityConfig;
+import com.fasterxml.jackson.databind.deser.std.UUIDDeserializer;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.Firestore;
@@ -76,22 +77,34 @@ class HelloWorldController {
     }
 
     @GetMapping("/api/getALLCustomers")
-    public @ResponseBody List<Customer> getALLCustomers() throws InterruptedException, ExecutionException {
-        var user = WebSecurityConfig.getUser();
-        if (!user.isManager()) throw new AuthorizationServiceException("You are not a manager");
+    public @ResponseBody ResponseEntity<?> getALLCustomers() throws InterruptedException, ExecutionException {
+        Logger logger = LoggerFactory.getLogger(this.getClass());
+        try{
+            var user = WebSecurityConfig.getUser();
+            if (!user.isManager()) throw new AuthorizationServiceException("You are not a manager");
 
-        List<Customer> customers = new ArrayList<>();
+            Map<String,Customer> customers = new HashMap<>();
 
 
-        ApiFuture<QuerySnapshot> query = db.collection("users").get();
-        QuerySnapshot querySnapshot = query.get();
-        List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
-        for (QueryDocumentSnapshot document : documents) {
-            Customer customer = new Customer(document.getString("email"),document.getString("name"));
-            customers.add(customer);
+            ApiFuture<QuerySnapshot> query = db.collection("customers").get();
+            QuerySnapshot querySnapshot = query.get();
+            List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
+            for (QueryDocumentSnapshot document : documents) {
+                Customer customer = new Customer(document.getString("email"),document.getString("name"));
+                customers.put(document.getId(), customer);
+            }
+
+            return ResponseEntity.ok(customers);
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("Error fetching orders", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching orders: " + e.getMessage());
+        } catch (AuthorizationServiceException e) {
+            logger.error("Authorization error", e);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Authorization error: " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected error", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error: " + e.getMessage());
         }
-
-        return customers;
     }
 
     @GetMapping("/api/getAllOrders")
@@ -104,7 +117,7 @@ class HelloWorldController {
                 throw new AuthorizationServiceException("You are not a manager");
             }
 
-            List<Order> orders = new ArrayList<>();
+            Map<String, Order> orders = new HashMap();
             ApiFuture<QuerySnapshot> query = db.collection("orders").get();
             QuerySnapshot querySnapshot = query.get();
             List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
@@ -117,7 +130,7 @@ class HelloWorldController {
                 Customer customer = gson.fromJson(gson.toJson(document.get("customer")),customerType);
                 List<Item> items = gson.fromJson(gson.toJson(document.get("items")), itemListType);
                 Order order = new Order(customer, items);
-                orders.add(order);
+                orders.put(document.getId(),order);
             }
 
             return ResponseEntity.ok(orders);

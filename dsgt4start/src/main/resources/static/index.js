@@ -147,6 +147,7 @@ function wireUpAuthChange() {
 
 function fetchData(token) {
     fetchOrders(token);
+    fetchCustomers(token);
 }
 
 async function fetchOrders(token) {
@@ -172,14 +173,53 @@ function displayOrders(orders) {
     console.log("displaying orders");
     const tbody = document.getElementById('orderTable').getElementsByTagName('tbody')[0];
     console.log(orders);
-    orders.forEach(order => {
+    Object.entries(orders).forEach(([id, order]) => {
         const row = tbody.insertRow();
 
-        const cellCustomer = row.insertCell(0);
-        const cellItems = row.insertCell(1);
+        const cellId = row.insertCell(0)
+        const cellCustomer = row.insertCell(1);
+        const cellItems = row.insertCell(2);
 
+        cellId.textContent = id;
         cellCustomer.textContent = order.customer.email;
         cellItems.textContent = order.items.map(item => item.productName).join(', ');
+    });
+
+}
+
+async function fetchCustomers(token) {
+  console.log("fetching customers");
+  try {
+    const response = await fetch('/api/getALLCustomers', {
+      method: 'GET',
+      headers: { Authorization: 'Bearer {token}' }
+    });
+
+    if (response.ok) {
+      const customers = await response.json();
+      displayCustomers(customers);
+    } else {
+      console.error('Failed to fetch orders:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+  }
+}
+
+function displayCustomers(customers) {
+    console.log("displaying customers");
+    const tbody = document.getElementById('customersTable').getElementsByTagName('tbody')[0];
+    console.log(customers);
+    Object.entries(customers).forEach(([id, customer]) => {
+        const row = tbody.insertRow();
+
+        const cellId = row.insertCell(0)
+        const cellName= row.insertCell(1);
+        const cellEmail = row.insertCell(2);
+
+        cellId.textContent = id;
+        cellEmail.textContent = customer.email;
+        cellName.textContent = customer.name;
     });
 
 }

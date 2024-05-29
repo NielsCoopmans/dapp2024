@@ -31,6 +31,8 @@ public class InitialDataLoader {
 
     private void addInitialCustomers() {
         try {
+            Car car1 = new Car( "citroen", "C3", "yellow", 2012,815666.52,"old");
+            db.collection("cars").document().set(car1).get();
 
             // Create two initial customers
             Customer customer1 = new Customer("Customer 1","customer1@example.com");
@@ -42,9 +44,9 @@ public class InitialDataLoader {
             db.collection("customers").document().set(customer2).get();
 
             // Create items
-            Item item1 = new Item("Product 1", 2, 19.99);
-            Item item2 = new Item("Product 2", 1, 99.99);
-            Item item3 = new Item("Product 3", 3, 29.99);
+            Item item1 = new Item("Product 1", 19.99);
+            Item item2 = new Item("Product 2", 99.99);
+            Item item3 = new Item("Product 3", 99.99);
 
             // Create orders
             Order order1 = new Order(customer1, List.of(item1, item2));

@@ -11,7 +11,6 @@ public class Order {
     public Order(Customer customer, List items){
         this.customer = customer;
         this.items = items;
-
     }
 
     public List getItems() {

@@ -43,28 +43,42 @@
     <div class="login-button" id="btnSignUp">Sign up</div>
     <div class="login-button" id="btnSignIn">Sign In</div>
 </div>
-<div class="page" id="contentdiv"></div>
-<div class="login-button" id="testButton">Niels</div>
+<div class="page" id="contentdiv">
+    <!--<div class="login-button" id="testButton">Niels</div> -->
 
-<h1>Order List</h1>
-<table id="orderTable">
-    <thead>
-    <tr>
-        <th>Customer email</th>
-        <th>Items</th>
-    </tr>
-    </thead>
-    <tbody>
-    <!-- Orders will be inserted here dynamically -->
-    </tbody>
-</table>
+    <h1>Order List</h1>
+    <table id="orderTable">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Customer email</th>
+            <th>Items</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Orders will be inserted here dynamically -->
+        </tbody>
+    </table>
+    <h1>Customers List</h1>
+    <table id="customersTable">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>name</th>
+            <th>email</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Orders will be inserted here dynamically -->
+        </tbody>
+    </table>
 
-<div class="page" id="cardiv">
-    <!-- Car List Section -->
-    <h2>Available Cars</h2>
-    <ul id="car-list"></ul>
+    <div class="page" id="cardiv">
+        <!-- Car List Section -->
+        <h2>Available Cars</h2>
+        <ul id="car-list"></ul>
+    </div>
 </div>
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         fetchCarList();
