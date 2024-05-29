@@ -31,8 +31,6 @@ public class InitialDataLoader {
 
     private void addInitialCustomers() {
         try {
-            Car car1 = new Car( "citroen", "C3", "yellow", 2012,815666.52,"old");
-            db.collection("cars").document().set(car1).get();
 
             // Create two initial customers
             Customer customer1 = new Customer("Customer 1","customer1@example.com");
@@ -49,7 +47,7 @@ public class InitialDataLoader {
             Item item3 = new Item("Product 3", 99.99);
 
             // Create orders
-            Order order1 = new Order(customer1, List.of(item1, item2, car1));
+            Order order1 = new Order(customer1, List.of(item1, item2));
             Order order2 = new Order(customer2, List.of(item3));
 
             // Add orders to Firestore
