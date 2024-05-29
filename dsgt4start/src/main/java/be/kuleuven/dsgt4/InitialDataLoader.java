@@ -49,7 +49,7 @@ public class InitialDataLoader {
             Item item3 = new Item("Product 3", 99.99);
 
             // Create orders
-            Order order1 = new Order(customer1, List.of(item1, item2));
+            Order order1 = new Order(customer1, List.of(item1, item2, car1));
             Order order2 = new Order(customer2, List.of(item3));
 
             // Add orders to Firestore

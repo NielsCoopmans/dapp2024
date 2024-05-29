@@ -60,7 +60,6 @@ function wireGuiUpEvents() {
   var signInButton = document.getElementById("btnSignIn");
   var signUpButton = document.getElementById("btnSignUp");
   var logoutButton = document.getElementById("btnLogout");
-  var testButton = document.getElementById("testButton");
 
   // Add event listeners to the sign in and sign up buttons
   signInButton.addEventListener("click", function () {
@@ -99,11 +98,7 @@ function wireGuiUpEvents() {
     } catch (err) { }
   });
 
-  // Add event listener to the test button
-  testButton.addEventListener("click", function () {
-    testButton.textContent = 'Clicked';
-    testButton.style.backgroundColor = 'red';
-  });
+
 }
 
 
@@ -148,6 +143,7 @@ function wireUpAuthChange() {
 function fetchData(token) {
     fetchOrders(token);
     fetchCustomers(token);
+    fetchCars(token);
 }
 
 async function fetchOrders(token) {
@@ -220,6 +216,51 @@ function displayCustomers(customers) {
         cellId.textContent = id;
         cellEmail.textContent = customer.email;
         cellName.textContent = customer.name;
+    });
+
+}
+
+async function fetchCars(token) {
+  console.log("fetching cars");
+  try {
+    const response = await fetch('/api/getALLCars', {
+      method: 'GET',
+      headers: { Authorization: 'Bearer {token}' }
+    });
+
+    if (response.ok) {
+      const cars = await response.json();
+      displayCars(cars);
+    } else {
+      console.error('Failed to fetch orders:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+  }
+}
+
+function displayCars(cars) {
+    console.log("displaying cars");
+    const tbody = document.getElementById('carsTable').getElementsByTagName('tbody')[0];
+    console.log(cars);
+    Object.entries(cars).forEach(([id, car]) => {
+        const row = tbody.insertRow();
+
+        const cellId = row.insertCell(0)
+        const cellModel= row.insertCell(1);
+        const cellBrand = row.insertCell(2);
+        const cellColor = row.insertCell(3);
+        const cellYear = row.insertCell(4);
+        const cellPrice = row.insertCell(5);
+        const cellDescription = row.insertCell(6);
+
+        cellId.textContent = id;
+        cellModel.textContent = car.model;
+        cellBrand.textContent = car.brand;
+        cellColor.textContent = car.color;
+        cellYear.textContent = car.year;
+        cellPrice.textContent = car.price;
+        cellDescription.textContent = car.description;
     });
 
 }

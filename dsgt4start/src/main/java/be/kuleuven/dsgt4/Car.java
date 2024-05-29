@@ -13,12 +13,16 @@ public class Car extends Item{
     private String description;
 
     public Car() {
-        super();
+
     }
 
     public Car( String brand, String model, String color, int year, double price, String description) {
-        super("car",price);
-
+        super("Car{" +
+                brand + ' ' +
+                model + ' ' +
+                color + ' ' +
+                year +
+                '}',price);
         this.brand = brand;
         this.model = model;
         this.color = color;

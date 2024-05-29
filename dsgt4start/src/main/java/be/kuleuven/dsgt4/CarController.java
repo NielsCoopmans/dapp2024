@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.ExecutionException;
+
 @RestController
 @RequestMapping("/api/broker/cars")
 public class CarController {
@@ -19,7 +21,7 @@ public class CarController {
     }
 
     @GetMapping
-    public Car[] getAllCars() {
+    public Car[] getAllCars() throws ExecutionException, InterruptedException {
         return supplierService.getAllCars();
     }
 }
