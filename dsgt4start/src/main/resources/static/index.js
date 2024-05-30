@@ -10,6 +10,14 @@ import {
   setPersistence,
   browserSessionPersistence,
 } from "https://www.gstatic.com/firebasejs/9.9.4/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/9.9.4/firebase-firestore.js";
+
+var emailInput = document.getElementById('email');
+var emailLabel = document.querySelector('label[for="email"]');
 
 // we setup the authentication, and then wire up some key events to event handlers
 setupAuth();
@@ -33,6 +41,8 @@ function setupAuth() {
   // signout any existing user. Removes any token still in the auth context
   const firebaseApp = initializeApp(firebaseConfig);
   const auth = getAuth(firebaseApp);
+  const db = getFirestore(firebaseApp);
+
   try {
     auth.signOut();
   } catch (err) { }
@@ -97,13 +107,27 @@ function wireGuiUpEvents() {
       auth.signOut();
     } catch (err) { }
   });
-
-
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    var emailInput = document.getElementById('email');
+    var emailLabel = document.querySelector('label[for="email"]');
+
+    // Move the event listener setup for email input here
+    emailInput.addEventListener('input', function() {
+      if (this.value !== '') {
+        emailLabel.classList.add('active');
+      } else {
+        emailLabel.classList.remove('active');
+      }
+    });
+
+    // Your remaining JavaScript code
+    // Ensure it's properly formatted and does not cause syntax errors.
+});
 
 
 function wireUpAuthChange() {
-
   var auth = getAuth();
   onAuthStateChanged(auth, (user) => {
     console.log("onAuthStateChanged");
@@ -124,7 +148,7 @@ function wireUpAuthChange() {
     }
 
     auth.currentUser.getIdTokenResult().then((idTokenResult) => {
-      console.log("Hello " + auth.currentUser.email)
+      console.log("Hello " + auth.currentUser.email);
 
       //update GUI when user is authenticated
       showAuthenticated(auth.currentUser.email);
@@ -134,16 +158,14 @@ function wireUpAuthChange() {
       //fetch data from server when authentication was successful.
       var token = idTokenResult.token;
       fetchData(token);
-
     });
-
   });
 }
 
 function fetchData(token) {
-    fetchOrders(token);
-    fetchCustomers(token);
-    fetchCars(token);
+  fetchOrders(token);
+  fetchCustomers(token);
+  fetchCars(token);
 }
 
 async function fetchOrders(token) {
@@ -151,7 +173,7 @@ async function fetchOrders(token) {
   try {
     const response = await fetch('/api/getAllOrders', {
       method: 'GET',
-      headers: { Authorization: 'Bearer {token}' }
+      headers: { Authorization: `Bearer ${token}` }
     });
 
     if (response.ok) {
@@ -166,21 +188,20 @@ async function fetchOrders(token) {
 }
 
 function displayOrders(orders) {
-    console.log("displaying orders");
-    const tbody = document.getElementById('orderTable').getElementsByTagName('tbody')[0];
-    console.log(orders);
-    Object.entries(orders).forEach(([id, order]) => {
-        const row = tbody.insertRow();
+  console.log("displaying orders");
+  const tbody = document.getElementById('orderTable').getElementsByTagName('tbody')[0];
+  console.log(orders);
+  Object.entries(orders).forEach(([id, order]) => {
+    const row = tbody.insertRow();
 
-        const cellId = row.insertCell(0)
-        const cellCustomer = row.insertCell(1);
-        const cellItems = row.insertCell(2);
+    const cellId = row.insertCell(0)
+    const cellCustomer = row.insertCell(1);
+    const cellItems = row.insertCell(2);
 
-        cellId.textContent = id;
-        cellCustomer.textContent = order.customer.email;
-        cellItems.textContent = order.items.map(item => item.productName).join(', ');
-    });
-
+    cellId.textContent = id;
+    cellCustomer.textContent = order.customer.email;
+    cellItems.textContent = order.items.map(item => item.productName).join(', ');
+  });
 }
 
 async function fetchCustomers(token) {
@@ -188,7 +209,7 @@ async function fetchCustomers(token) {
   try {
     const response = await fetch('/api/getALLCustomers', {
       method: 'GET',
-      headers: { Authorization: 'Bearer {token}' }
+      headers: { Authorization: `Bearer ${token}` }
     });
 
     if (response.ok) {
@@ -203,21 +224,20 @@ async function fetchCustomers(token) {
 }
 
 function displayCustomers(customers) {
-    console.log("displaying customers");
-    const tbody = document.getElementById('customersTable').getElementsByTagName('tbody')[0];
-    console.log(customers);
-    Object.entries(customers).forEach(([id, customer]) => {
-        const row = tbody.insertRow();
+  console.log("displaying customers");
+  const tbody = document.getElementById('customersTable').getElementsByTagName('tbody')[0];
+  console.log(customers);
+  Object.entries(customers).forEach(([id, customer]) => {
+    const row = tbody.insertRow();
 
-        const cellId = row.insertCell(0)
-        const cellName= row.insertCell(1);
-        const cellEmail = row.insertCell(2);
+    const cellId = row.insertCell(0)
+    const cellName = row.insertCell(1);
+    const cellEmail = row.insertCell(2);
 
-        cellId.textContent = id;
-        cellEmail.textContent = customer.email;
-        cellName.textContent = customer.name;
-    });
-
+    cellId.textContent = id;
+    cellEmail.textContent = customer.email;
+    cellName.textContent = customer.name;
+  });
 }
 
 async function fetchCars(token) {
@@ -225,7 +245,7 @@ async function fetchCars(token) {
   try {
     const response = await fetch('/api/getALLCars', {
       method: 'GET',
-      headers: { Authorization: 'Bearer {token}' }
+      headers: { Authorization: `Bearer ${token}` }
     });
 
     if (response.ok) {
@@ -240,29 +260,28 @@ async function fetchCars(token) {
 }
 
 function displayCars(cars) {
-    console.log("displaying cars");
-    const tbody = document.getElementById('carsTable').getElementsByTagName('tbody')[0];
-    console.log(cars);
-    Object.entries(cars).forEach(([id, car]) => {
-        const row = tbody.insertRow();
+  console.log("displaying cars");
+  const tbody = document.getElementById('carsTable').getElementsByTagName('tbody')[0];
+  console.log(cars);
+  Object.entries(cars).forEach(([id, car]) => {
+    const row = tbody.insertRow();
 
-        const cellId = row.insertCell(0)
-        const cellModel= row.insertCell(1);
-        const cellBrand = row.insertCell(2);
-        const cellColor = row.insertCell(3);
-        const cellYear = row.insertCell(4);
-        const cellPrice = row.insertCell(5);
-        const cellDescription = row.insertCell(6);
+    const cellId = row.insertCell(0)
+    const cellModel = row.insertCell(1);
+    const cellBrand = row.insertCell(2);
+    const cellColor = row.insertCell(3);
+    const cellYear = row.insertCell(4);
+    const cellPrice = row.insertCell(5);
+    const cellDescription = row.insertCell(6);
 
-        cellId.textContent = id;
-        cellModel.textContent = car.model;
-        cellBrand.textContent = car.brand;
-        cellColor.textContent = car.color;
-        cellYear.textContent = car.year;
-        cellPrice.textContent = car.price;
-        cellDescription.textContent = car.description;
-    });
-
+    cellId.textContent = id;
+    cellModel.textContent = car.model;
+    cellBrand.textContent = car.brand;
+    cellColor.textContent = car.color;
+    cellYear.textContent = car.year;
+    cellPrice.textContent = car.price;
+    cellDescription.textContent = car.description;
+  });
 }
 
 function showAuthenticated(username) {
@@ -274,53 +293,4 @@ function showAuthenticated(username) {
 function showUnAuthenticated() {
   document.getElementById("namediv").innerHTML = "";
   document.getElementById("email").value = "";
-  document.getElementById("password").value = "";
-  document.getElementById("logindiv").style.display = "block";
-  document.getElementById("contentdiv").style.display = "none";
-}
-
-function addContent(text) {
-  document.getElementById("contentdiv").innerHTML += (text + "<br/>");
-}
-
-// calling /api/hello on the rest service to illustrate text based data retrieval
-function getHello(token) {
-
-  fetch('/api/hello', {
-    headers: { Authorization: 'Bearer {token}' }
-  })
-    .then((response) => {
-      return response.text();
-    })
-    .then((data) => {
-
-      console.log(data);
-      addContent(data);
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
-
-
-}
-// calling /api/whoami on the rest service to illustrate JSON based data retrieval
-function whoami(token) {
-
-  fetch('/api/whoami', {
-    headers: { Authorization: 'Bearer ' + token }
-  })
-    .then((response) => {
-      return response.json();
-    })
-    .then((data) => {
-      console.log(data.email + data.role);
-      addContent("Whoami at rest service: " + data.email + " - " + data.role);
-
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
-
-
-}
-
+  document
