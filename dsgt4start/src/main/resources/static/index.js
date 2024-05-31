@@ -293,4 +293,5 @@ function showAuthenticated(username) {
 function showUnAuthenticated() {
   document.getElementById("namediv").innerHTML = "";
   document.getElementById("email").value = "";
-  document
+  document.getElementById("contentdiv").style.display = "none";
+  }
