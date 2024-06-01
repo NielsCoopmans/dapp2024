@@ -163,8 +163,8 @@ function wireUpAuthChange() {
 }
 
 function fetchData(token) {
-  fetchOrders(token);
-  fetchCustomers(token);
+  //fetchOrders(token);
+  //fetchCustomers(token);
   fetchCars(token);
 }
 
@@ -240,6 +240,8 @@ function displayCustomers(customers) {
   });
 }
 
+const cart = [];
+
 async function fetchCars(token) {
   console.log("fetching cars");
   try {
@@ -261,27 +263,49 @@ async function fetchCars(token) {
 
 function displayCars(cars) {
   console.log("displaying cars");
-  const tbody = document.getElementById('carsTable').getElementsByTagName('tbody')[0];
-  console.log(cars);
+  const carList = document.getElementById('car-list');
+  const carsList = [];
   Object.entries(cars).forEach(([id, car]) => {
-    const row = tbody.insertRow();
+    const carItem = document.createElement('div');
+    carItem.classList.add('car-item');
+    carsList.push(car)
+    carItem.innerHTML = `
+        <img src="${car.image}" alt="${car.model}">
+        <div class="car-title">${car.brand} ${car.model}</div>
+        <div class="car-price">${car.price}</div>
+        <button class="add-to-cart-btn" data-index="${carsList.indexOf(car)}">Add to Cart</button>
+    `;
 
-    const cellId = row.insertCell(0)
-    const cellModel = row.insertCell(1);
-    const cellBrand = row.insertCell(2);
-    const cellColor = row.insertCell(3);
-    const cellYear = row.insertCell(4);
-    const cellPrice = row.insertCell(5);
-    const cellDescription = row.insertCell(6);
-
-    cellId.textContent = id;
-    cellModel.textContent = car.model;
-    cellBrand.textContent = car.brand;
-    cellColor.textContent = car.color;
-    cellYear.textContent = car.year;
-    cellPrice.textContent = car.price;
-    cellDescription.textContent = car.description;
+    carList.appendChild(carItem);
   });
+  carList.addEventListener('click', (event) => {
+      if (event.target.classList.contains('add-to-cart-btn')) {
+          const carIndex = event.target.getAttribute('data-index');
+          addToCart(carIndex,carsList);
+      }
+  });
+}
+
+function addToCart(index,cars) {
+    const car = cars[index];
+    if (car) {
+        cart.push(car);
+        updateCart();
+    } else {
+        console.error(`Car with index ${index} not found.`);
+    }
+}
+
+function updateCart() {
+    const cartCounter = document.getElementById('cart-counter');
+    const cartItems = document.getElementById('cart-items');
+    cartItems.innerHTML = '';
+    cart.forEach((car, index) => {
+        const li = document.createElement('li');
+        li.textContent = `${car.brand} ${car.model} - ${car.price}`;
+        cartItems.appendChild(li);
+    });
+    cartCounter.textContent = cart.length;
 }
 
 function showAuthenticated(username) {

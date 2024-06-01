@@ -56,80 +56,18 @@
 </div>
 
 <div class="page" id="contentdiv">
-    <h1>Cars List</h1>
-    <table id="carsTable">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>model</th>
-            <th>brand</th>
-            <th>color</th>
-            <th>year</th>
-            <th>price</th>
-            <th>description</th>
-        </tr>
-        </thead>
-        <tbody>
-        <!-- Orders will be inserted here dynamically -->
-        </tbody>
-    </table>
-
-    <h1>Order List</h1>
-    <table id="orderTable">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Customer email</th>
-            <th>Items</th>
-        </tr>
-        </thead>
-        <tbody>
-        <!-- Orders will be inserted here dynamically -->
-        </tbody>
-    </table>
-    <h1>Customers List</h1>
-    <table id="customersTable">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>name</th>
-            <th>email</th>
-        </tr>
-        </thead>
-        <tbody>
-        <!-- Orders will be inserted here dynamically -->
-        </tbody>
-    </table>
-
-    <div class="page" id="cardiv">
-        <!-- Car List Section -->
-        <h2>Available Cars</h2>
-        <ul id="car-list"></ul>
+    <div id="cart">
+        <svg id="cart-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 6H21L20.334 10H6L5 3H2" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="9" cy="20" r="2" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="18" cy="20" r="2" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span id="cart-counter">0</span>
+        <ul id="cart-items"></ul>
     </div>
+    <h1>Available Cars</h1>
+    <div class="car-container" id="car-list"></div>
 </div>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        fetchCarList();
-
-        function fetchCarList() {
-            fetch('/api/broker/cars')
-                .then(response => response.json())
-                .then(cars => {
-                    const carList = document.getElementById('car-list');
-                    carList.innerHTML = ''; // Clear any existing content
-                    cars.forEach(car => {
-                        const li = document.createElement('li');
-                        const a = document.createElement('a');
-                        a.href = `/cars/${car.id}`;
-                        a.textContent = `${car.brand} ${car.model}`;
-                        li.appendChild(a);
-                        carList.appendChild(li);
-                    });
-                })
-                .catch(error => console.error('Error fetching cars:', error));
-        }
-    });
-</script>
 
 </body>
 </html>
