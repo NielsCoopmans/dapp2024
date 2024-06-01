@@ -144,26 +144,31 @@ function wireUpAuthChange() {
       showUnAuthenticated();
       return;
     }
-    if (auth.currentUser === undefined || auth.currentUser == null) {
-      console.log("currentUser is undefined or null");
+    if (auth.currentUser == null) {
+      console.log("currentUser is null");
       showUnAuthenticated();
       return;
     }
-    if(auth != null){
-    auth.currentUser.getIdTokenResult().then((idTokenResult) => {
-      console.log("Hello " + auth.currentUser.email);
-
-      //update GUI when user is authenticated
-      showAuthenticated(auth.currentUser.email);
-
-      console.log("Token: " + idTokenResult.token);
-
-      //fetch data from server when authentication was successful.
-      var token = idTokenResult.token;
-      authToken = token;
-      fetchData(token);
-    });
+    if(auth.currentUser === undefined) {
+      console.log("currentUser is undefined ");
+      showUnAuthenticated();
+      return;
     }
+    auth.currentUser.getIdTokenResult().then((idTokenResult) => {
+        console.log("Hello " + auth.currentUser.email);
+
+        //update GUI when user is authenticated
+        showAuthenticated(auth.currentUser.email);
+
+        console.log("Token: " + idTokenResult.token);
+
+        //fetch data from server when authentication was successful.
+        var token = idTokenResult.token;
+        authToken = token;
+        fetchData(token);
+    });
+
+
   });
 }
 
@@ -278,7 +283,7 @@ function displayCars(cars) {
     carItem.classList.add('car-item');
     carsList.push(car)
     carItem.innerHTML = `
-        <img src="${car.image}" alt="${car.model}">
+        <img src="${car.image ? car.image : 'images/placeholder.png'}" alt="${car.model}">
         <div class="car-title">${car.brand} ${car.model}</div>
         <div class="car-price">${car.price}</div>
         <button class="add-to-cart-btn" data-index="${carsList.indexOf(car)}">Add to Cart</button>
@@ -329,7 +334,7 @@ function updateCart() {
         carDiv.classList.add('car-item');
         carDiv.dataset.index = carIndex;
         carDiv.innerHTML = `
-            <img src="${car.image}" alt="${car.model}">
+            <img src="${car.image ? car.image : 'images/placeholder.png'}" alt="${car.model}">
             <div class="car-title">${car.brand} ${car.model}</div>
             <div class="car-price">${car.price}</div>
             <div class="amount">Amount: ${count}</div>
