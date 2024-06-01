@@ -5,19 +5,19 @@ import java.util.UUID;
 
 public class Order {
     private Customer customer;
-    private List items;
+    private List<Item> items;
 
 
-    public Order(Customer customer, List items){
+    public Order(Customer customer, List<Item> items){
         this.customer = customer;
         this.items = items;
     }
 
-    public List getItems() {
+    public List<Item> getItems() {
         return items;
     }
 
-    public void setItems(List items) {
+    public void setItems(List<Item> items) {
         this.items = items;
     }
 

@@ -33,9 +33,9 @@ public class InitialDataLoader {
         try {
 
             // Create two initial customers
-            Customer customer1 = new Customer("Customer 1","customer1@example.com");
+            Customer customer1 = new Customer("customer1@example.com");
 
-            Customer customer2 = new Customer("Customer 2","customer2@example.com");
+            Customer customer2 = new Customer("customer2@example.com");
 
             // Add customers to Firestore
             db.collection("customers").document().set(customer1).get();

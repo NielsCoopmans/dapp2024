@@ -18,7 +18,8 @@ import {
 
 var emailInput = document.getElementById('email');
 var emailLabel = document.querySelector('label[for="email"]');
-
+let authToken = null;
+let isCarsDisplayed = false; // Flag to track if cars are already displayed
 // we setup the authentication, and then wire up some key events to event handlers
 setupAuth();
 wireGuiUpEvents();
@@ -105,6 +106,8 @@ function wireGuiUpEvents() {
     try {
       var auth = getAuth();
       auth.signOut();
+      document.getElementById("logindiv").style.display = "block";
+      document.getElementById("contentdiv").style.display = "none";
     } catch (err) { }
   });
 }
@@ -157,6 +160,7 @@ function wireUpAuthChange() {
 
       //fetch data from server when authentication was successful.
       var token = idTokenResult.token;
+      authToken = token;
       fetchData(token);
     });
   });
@@ -165,7 +169,9 @@ function wireUpAuthChange() {
 function fetchData(token) {
   //fetchOrders(token);
   //fetchCustomers(token);
-  fetchCars(token);
+  if (!isCarsDisplayed) {
+      fetchCars(token);
+  }
 }
 
 async function fetchOrders(token) {
@@ -253,6 +259,7 @@ async function fetchCars(token) {
     if (response.ok) {
       const cars = await response.json();
       displayCars(cars);
+      isCarsDisplayed = true;
     } else {
       console.error('Failed to fetch orders:', response.statusText);
     }
@@ -289,7 +296,7 @@ function displayCars(cars) {
 function addToCart(index,cars) {
     const car = cars[index];
     if (car) {
-        cart.push(car);
+        cart.push([car,index]);
         updateCart();
     } else {
         console.error(`Car with index ${index} not found.`);
@@ -299,14 +306,114 @@ function addToCart(index,cars) {
 function updateCart() {
     const cartCounter = document.getElementById('cart-counter');
     const cartItems = document.getElementById('cart-items');
-    cartItems.innerHTML = '';
-    cart.forEach((car, index) => {
-        const li = document.createElement('li');
-        li.textContent = `${car.brand} ${car.model} - ${car.price}`;
-        cartItems.appendChild(li);
+    cartItems.innerHTML = ''; // Clear current cart display
+
+    // Create an object to store counts of each car
+    const carCounts = {};
+
+    // Iterate through the cart items
+    cart.forEach((carItem) => {
+        const car = carItem[0];
+        carCounts[car.model] = (carCounts[car.model] || 0) + 1;
     });
+
+    // Create the cart items display
+    Object.keys(carCounts).forEach((model) => {
+        const carItem = cart.find(item => item[0].model === model);
+        const car = carItem[0];
+        const carIndex = carItem[1];
+        const count = carCounts[model];
+
+        const carDiv = document.createElement('div');
+        carDiv.classList.add('car-item');
+        carDiv.dataset.index = carIndex;
+        carDiv.innerHTML = `
+            <img src="${car.image}" alt="${car.model}">
+            <div class="car-title">${car.brand} ${car.model}</div>
+            <div class="car-price">${car.price}</div>
+            <div class="amount">Amount: ${count}</div>
+            <button class="remove-from-cart-btn" data-index="${carIndex}" data-model="${car.model}">Remove from Cart</button>
+        `;
+
+        cartItems.appendChild(carDiv);
+    });
+    const placeOrderButton = document.createElement('button');
+    placeOrderButton.id = 'place-order-btn';
+    placeOrderButton.textContent = 'Place Order';
+    cartItems.appendChild(placeOrderButton);
+    placeOrderButton.addEventListener('click', placeOrder);
     cartCounter.textContent = cart.length;
+
+    // Add event listeners for the remove buttons
+    const removeButtons = document.querySelectorAll('.remove-from-cart-btn');
+    removeButtons.forEach((button) => {
+        button.addEventListener('click', (event) => {
+            const carIndexToRemove = event.target.dataset.index;
+            const carModelToRemove = event.target.dataset.model;
+
+            // Remove one instance of the car from the cart array
+            const carIndex = cart.findIndex(carItem => carItem[0].model === carModelToRemove && carItem[1] == carIndexToRemove);
+            if (carIndex !== -1) {
+                cart.splice(carIndex, 1); // Remove item from cart array
+            }
+
+            updateCart(); // Update the cart display
+        });
+    });
 }
+
+function placeOrder() {
+    if (cart.length === 0) {
+        alert('Your cart is empty.');
+        return;
+    }
+
+    // Example of order data format
+    const orderData = {
+        items: cart.map(carItem => ({
+            car: carItem[0], // item object
+        })),
+        // You can add more order details here, such as user information, order date, etc.
+    };
+
+    // Send order data to the server (example with fetch)
+    fetch('/api/createOrder', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}` // Add token if needed
+        },
+        body: JSON.stringify(orderData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert('Order placed successfully!');
+        cart.length = 0; // Clear the cart
+        updateCart(); // Refresh the cart display
+    })
+    .catch(error => {
+        console.error('Error placing order:', error);
+        alert('There was an error placing your order. Please try again.');
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const cartButton = document.getElementById('cart-button');
+    const cartItems = document.getElementById('cart-div');
+    const items = document.getElementById('items')
+
+    cartButton.addEventListener('click', function() {
+        // Toggle the display of cart items
+        if (cartItems.style.display === 'none') {
+            cartItems.style.display = 'block';
+            items.style.display = 'none'
+        } else {
+            items.style.display = 'block'
+            cartItems.style.display = 'none';
+        }
+    });
+
+});
 
 function showAuthenticated(username) {
   document.getElementById("namediv").innerHTML = "Hello " + username;
