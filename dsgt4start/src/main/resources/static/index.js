@@ -149,7 +149,7 @@ function wireUpAuthChange() {
       showUnAuthenticated();
       return;
     }
-
+    if(auth != null){
     auth.currentUser.getIdTokenResult().then((idTokenResult) => {
       console.log("Hello " + auth.currentUser.email);
 
@@ -163,6 +163,7 @@ function wireUpAuthChange() {
       authToken = token;
       fetchData(token);
     });
+    }
   });
 }
 
