@@ -42,4 +42,20 @@ public class SupplierServiceCar {
                 .bodyToMono(Car.class)
                 .block();
     }
+
+    public void orderCar(UUID id) {
+        webClient.post()
+                .uri("api/cars/" + id + "/order")
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block();
+    }
+
+    public void reserveCar(UUID id) {
+        webClient.post()
+                .uri("api/cars/" + id + "/reserve")
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block();
+    }
 }

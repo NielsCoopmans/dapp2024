@@ -2,9 +2,10 @@ package be.kuleuven.dsgt4;
 
 import com.google.cloud.firestore.Firestore;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 
 @RestController
@@ -20,6 +21,26 @@ public class CarController {
     @GetMapping
     public Car[] getAllCars(){
         return supplierServiceCar.getAllCars();
+    }
+
+    @PostMapping("/{id}/order")
+    public ResponseEntity<String> orderCar(@PathVariable UUID id) {
+        try{
+            supplierServiceCar.orderCar(id);
+            return ResponseEntity.ok("Car ordered");
+        }catch (Exception e){
+            return ResponseEntity.status(500).body("Failed to order car: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/{id}/reserve")
+    public ResponseEntity<String> reserveCar(@PathVariable UUID id) {
+        try {
+            supplierServiceCar.reserveCar(id);
+            return ResponseEntity.ok("Car reserved successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Failed to reserve car: " + e.getMessage());
+        }
     }
 
 }
