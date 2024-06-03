@@ -41,18 +41,6 @@ public class InitialDataLoader {
             db.collection("customers").document().set(customer1).get();
             db.collection("customers").document().set(customer2).get();
 
-            // Create items
-            Item item1 = new Item("Product 1", 19.99);
-            Item item2 = new Item("Product 2", 99.99);
-            Item item3 = new Item("Product 3", 99.99);
-
-            // Create orders
-            Order order1 = new Order(customer1, List.of(item1, item2));
-            Order order2 = new Order(customer2, List.of(item3));
-
-            // Add orders to Firestore
-            db.collection("orders").document().set(order1).get();
-            db.collection("orders").document().set(order2).get();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace(); // Handle the exception appropriately in production
         }

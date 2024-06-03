@@ -27,9 +27,11 @@ public class CustomerController {
 
 
     @PostMapping("/api/createCustomer")
-    public void createOrder(@RequestBody Customer customer) {
+    public void createOrder(@RequestBody Map<String, Object> customerData) {
         UUID customerId = UUID.randomUUID();
-        db.collection("orders").document(customerId.toString()).set(customer);
+        String emailCustomer = (String) customerData.get("email");
+        Customer customer = new Customer(emailCustomer);
+        db.collection("customers").document(customerId.toString()).set(customer);
     }
 
     @PutMapping("/api/updateCustomer/{customerId}")

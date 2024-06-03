@@ -1,27 +1,32 @@
 package be.kuleuven.dsgt4;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import java.util.Objects;
 
 public class Item {
 
-    private String productName;
+    private String name;
     private double price;
+    private String brand;
 
-    public Item(String productName, double price) {
-        this.productName = productName;
+    public Item(String name, double price, String brand) {
+        this.name = name;
         this.price = price;
+        this.brand = brand;
     }
 
     public Item() {
 
     }
 
-    public String getProductName() {
-        return productName;
+    public String getName() {
+        return name;
     }
 
-    public void setProductName(String productName) {
-        this.productName = productName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public double getPrice() {
@@ -32,12 +37,12 @@ public class Item {
         this.price = price;
     }
 
-    @Override
-    public String toString() {
-        return "Item{" +
-                ", productName='" + productName + '\'' +
-                ", price=" + price +
-                '}';
+    public String getBrand() {
+        return brand;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
     }
 
     @Override
@@ -45,11 +50,20 @@ public class Item {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Item item = (Item) o;
-        return Double.compare(price, item.price) == 0 && Objects.equals(productName, item.productName);
+        return Double.compare(price, item.price) == 0 && Objects.equals(name, item.name) && Objects.equals(brand, item.brand);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(productName, price);
+        return Objects.hash(name, price, brand);
     }
+
+    @Override
+    public String toString() {
+        return "Item{" +
+                ", productName='" + name + '\'' +
+                ", price=" + price +
+                '}';
+    }
+
 }

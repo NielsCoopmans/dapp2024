@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class Car extends Item{
-
+    private String name;
     private String brand;
     private String model;
     private String color;
@@ -13,22 +13,26 @@ public class Car extends Item{
     private String description;
 
     public Car() {
-
+        super();
     }
 
-    public Car( String brand, String model, String color, int year, double price, String description) {
-        super("Car{" +
-                brand + ' ' +
-                model + ' ' +
-                color + ' ' +
-                year +
-                '}',price);
+    public Car( String brand, String model, String color, int year, double price, String name) {
+        super(name,price,brand);
+        this.name = name;
         this.brand = brand;
         this.model = model;
         this.color = color;
         this.year = year;
         this.price = price;
-        this.description = description;
+        this.description = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getBrand() {
@@ -77,6 +81,7 @@ public class Car extends Item{
 
     public void setDescription(String description) {
         this.description = description;
+        this.name = description;
     }
 
     @Override
