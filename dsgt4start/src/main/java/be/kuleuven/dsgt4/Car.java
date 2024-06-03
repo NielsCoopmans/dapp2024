@@ -4,13 +4,17 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class Car extends Item{
-
+    public enum Status {
+        AVAILABLE, RESERVED, ORDERED
+    }
+    private UUID id;
     private String brand;
     private String model;
     private String color;
     private int year;
     private double price;
     private String description;
+    private Status status;
 
     public Car() {
 
@@ -29,6 +33,15 @@ public class Car extends Item{
         this.year = year;
         this.price = price;
         this.description = description;
+        this.status = Status.AVAILABLE;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
     }
 
     public String getBrand() {
@@ -77,6 +90,14 @@ public class Car extends Item{
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
     }
 
     @Override
