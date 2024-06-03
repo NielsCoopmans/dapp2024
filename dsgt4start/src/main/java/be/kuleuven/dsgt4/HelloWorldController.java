@@ -29,42 +29,6 @@ class HelloWorldController {
     @Autowired
     Firestore db;
 
-    @GetMapping("/api/getALLCars")
-    public @ResponseBody ResponseEntity<?> getALLCars() throws InterruptedException, ExecutionException {
-        Logger logger = LoggerFactory.getLogger(this.getClass());
-        try{
-            var user = WebSecurityConfig.getUser();
-            if (!user.isManager()) throw new AuthorizationServiceException("You are not a manager");
-
-            Map<String,Car> cars = new HashMap<>();
-
-            ApiFuture<QuerySnapshot> query = db.collection("cars").get();
-            QuerySnapshot querySnapshot = query.get();
-            List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
-            for (QueryDocumentSnapshot document : documents) {
-                String model = document.getString("model");
-                String brand = document.getString("brand");
-                String color = document.getString("color");
-                int year= (int) (long) document.get("year");
-                double price = (double) document.get("price");
-                String description = document.getString("description");
-                Car car = new Car(model,brand,color,year,price,description);
-                cars.put(document.getId(), car);
-            }
-
-            return ResponseEntity.ok(cars);
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("Error fetching orders", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching orders: " + e.getMessage());
-        } catch (AuthorizationServiceException e) {
-            logger.error("Authorization error", e);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Authorization error: " + e.getMessage());
-        } catch (Exception e) {
-            logger.error("Unexpected error", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error: " + e.getMessage());
-        }
-    }
-
     @GetMapping("/api/hello")
     public String hello() {
         System.out.println("Inside hello");

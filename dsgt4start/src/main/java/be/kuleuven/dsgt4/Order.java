@@ -4,13 +4,51 @@ import java.util.List;
 import java.util.UUID;
 
 public class Order {
+    private int id;
     private Customer customer;
     private List<Item> items;
+    private boolean carsCompleted;
+    private boolean exhaustsCompleted;
 
 
-    public Order(Customer customer, List<Item> items){
+    public Order(int id, Customer customer, List<Item> items, boolean carsCompleted, boolean exhaustsCompleted){
+        this.id = id;
         this.customer = customer;
         this.items = items;
+        this.carsCompleted = carsCompleted;
+        this.exhaustsCompleted = exhaustsCompleted;
+    }
+
+    public boolean isExhaustsCompleted() {
+        return exhaustsCompleted;
+    }
+
+    public void setExhaustsCompleted(boolean exhaustsCompleted) {
+        this.exhaustsCompleted = exhaustsCompleted;
+    }
+
+    public boolean isCarsCompleted() {
+        return carsCompleted;
+    }
+
+    public void setCarsCompleted(boolean carsCompleted) {
+        this.carsCompleted = carsCompleted;
+    }
+
+    public boolean isCompletedCars() {
+        return carsCompleted;
+    }
+
+    public void setCompletedCars(boolean carsCompleted) {
+        this.carsCompleted = carsCompleted;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public List<Item> getItems() {

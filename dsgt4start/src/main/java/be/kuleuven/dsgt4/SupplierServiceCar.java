@@ -14,17 +14,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Service
-public class SupplierService {
+public class SupplierServiceCar {
     private final WebClient webClient;
 
-    @Autowired
-    Firestore db;
-
-    public SupplierService(WebClient.Builder webClientBuilder) {
+    public SupplierServiceCar(WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.baseUrl("http://20.37.125.125:8089").build();
     }
 
-    public Car[] getAllCars() throws ExecutionException, InterruptedException {
+    public Car[] getAllCars(){
         CollectionModel<EntityModel<Car>> carsModel = webClient.get()
                 .uri("/api/cars")
                 .retrieve()
@@ -34,13 +31,6 @@ public class SupplierService {
         List<Car> cars = carsModel.getContent().stream()
                 .map(EntityModel::getContent)
                 .collect(Collectors.toList());
-        var query = db.collection("cars").get().get();
-        if (query.isEmpty()) {
-            //alle cars in the db
-            for(Car car: cars){
-                db.collection("cars").document().set(car).get();
-            }
-        }
 
         return cars.toArray(new Car[0]);
     }

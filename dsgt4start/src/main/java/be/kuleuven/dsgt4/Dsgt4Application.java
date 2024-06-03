@@ -14,6 +14,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 
 import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 @EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL)
 @SpringBootApplication
@@ -73,6 +75,11 @@ public class Dsgt4Application {
 		DefaultHttpFirewall firewall = new DefaultHttpFirewall();
 		firewall.setAllowUrlEncodedSlash(true);
 		return firewall;
+	}
+
+	@Bean
+	public ScheduledExecutorService scheduledExecutorService() {
+		return Executors.newScheduledThreadPool(10);  // Customize the pool size as needed
 	}
 
 

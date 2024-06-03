@@ -8,6 +8,7 @@ public class Car extends Item{
         AVAILABLE, RESERVED, ORDERED
     }
     private UUID id;
+    private String name;
     private String brand;
     private String model;
     private String color;
@@ -17,23 +18,27 @@ public class Car extends Item{
     private Status status;
 
     public Car() {
-
+        super();
     }
 
-    public Car( String brand, String model, String color, int year, double price, String description) {
-        super("Car{" +
-                brand + ' ' +
-                model + ' ' +
-                color + ' ' +
-                year +
-                '}',price);
+    public Car( String brand, String model, String color, int year, double price, String name) {
+        super(name,price,brand);
+        this.name = name;
         this.brand = brand;
         this.model = model;
         this.color = color;
         this.year = year;
         this.price = price;
-        this.description = description;
+        this.description = name;
         this.status = Status.AVAILABLE;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public UUID getId() {
@@ -90,6 +95,7 @@ public class Car extends Item{
 
     public void setDescription(String description) {
         this.description = description;
+        this.name = description;
     }
 
     public Status getStatus() {

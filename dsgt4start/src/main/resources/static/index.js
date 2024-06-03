@@ -20,6 +20,7 @@ var emailInput = document.getElementById('email');
 var emailLabel = document.querySelector('label[for="email"]');
 let authToken = null;
 let isCarsDisplayed = false; // Flag to track if cars are already displayed
+let isExhaustDisplayed = false;
 // we setup the authentication, and then wire up some key events to event handlers
 setupAuth();
 wireGuiUpEvents();
@@ -93,6 +94,10 @@ function wireGuiUpEvents() {
     createUserWithEmailAndPassword(getAuth(), email.value, password.value)
       .then(function () {
         console.log("created");
+        getAuth().currentUser.getIdTokenResult().then((idTokenResult) => {
+            authToken = idTokenResult.token;
+            createCustomer(email.value);
+        });
       })
       .catch(function (error) {
         // Show an error message
@@ -160,8 +165,6 @@ function wireUpAuthChange() {
         //update GUI when user is authenticated
         showAuthenticated(auth.currentUser.email);
 
-        console.log("Token: " + idTokenResult.token);
-
         //fetch data from server when authentication was successful.
         var token = idTokenResult.token;
         authToken = token;
@@ -172,11 +175,37 @@ function wireUpAuthChange() {
   });
 }
 
+async function createCustomer(email) {
+  console.log("creating customer");
+
+    // Example of order data format
+    const customerData = {
+        email: email
+        // You can add more order details here, such as user information, order date, etc.
+    };
+
+    // Send order data to the server (example with fetch)
+    fetch('/api/createCustomer', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}` // Add token if needed
+        },
+        body: JSON.stringify(customerData)
+    })
+    .catch(error => {
+        console.error('Error crearing customer:', error);
+    });
+}
+
 function fetchData(token) {
   //fetchOrders(token);
   //fetchCustomers(token);
   if (!isCarsDisplayed) {
       fetchCars(token);
+  }
+  if(!isExhaustDisplayed) {
+      fetchExhausts(token);
   }
 }
 
@@ -257,7 +286,7 @@ const cart = [];
 async function fetchCars(token) {
   console.log("fetching cars");
   try {
-    const response = await fetch('/api/getALLCars', {
+    const response = await fetch('/api/broker/cars', {
       method: 'GET',
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -276,16 +305,17 @@ async function fetchCars(token) {
 
 function displayCars(cars) {
   console.log("displaying cars");
+  console.log(cars);
   const carList = document.getElementById('car-list');
   const carsList = [];
-  Object.entries(cars).forEach(([id, car]) => {
+  cars.forEach( car => {
     const carItem = document.createElement('div');
     carItem.classList.add('car-item');
     carsList.push(car)
     carItem.innerHTML = `
-        <img src="${car.image ? car.image : 'images/placeholder.png'}" alt="${car.model}">
-        <div class="car-title">${car.brand} ${car.model}</div>
-        <div class="car-price">${car.price}</div>
+        <img src="${car.image ? car.image : 'images/placeholder.png'}" alt="${car.name}">
+        <div class="car-title">${car.name}</div>
+        <div class="car-price">€ ${car.price}</div>
         <button class="add-to-cart-btn" data-index="${carsList.indexOf(car)}">Add to Cart</button>
     `;
 
@@ -295,6 +325,54 @@ function displayCars(cars) {
       if (event.target.classList.contains('add-to-cart-btn')) {
           const carIndex = event.target.getAttribute('data-index');
           addToCart(carIndex,carsList);
+      }
+  });
+}
+
+
+async function fetchExhausts(token) {
+  console.log("fetching exhausts");
+  try {
+    const response = await fetch('/api/broker/exhausts', {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (response.ok) {
+      const exhausts = await response.json();
+      displayExhausts(exhausts);
+      isExhaustDisplayed = true;
+    } else {
+      console.error('Failed to fetch orders:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+  }
+}
+
+function displayExhausts(exhausts) {
+  console.log("displaying exhausts");
+  console.log(exhausts);
+  const exhaustList = document.getElementById('exhaust-list');
+  const exhaustsList = [];
+  exhausts.forEach( exhaust => {
+    const exhaustItem = document.createElement('div');
+    exhaustItem.classList.add('car-item');
+    exhaustsList.push(exhaust)
+    exhaustItem.innerHTML = `
+        <img src="${exhaust.image ? exhaust.image : 'images/placeholderExhaust.jpg'}" alt="${exhaust.name}">
+        <div class="car-title">${exhaust.name}</div>
+        <div class="car-price">€ ${exhaust.price}</div>
+        <div class="stock">Remaining stock: ${exhaust.stock}</div>
+        <button class="add-to-cart-btn" data-index="${exhaustsList.indexOf(exhaust)}">Add to Cart</button>
+    `;
+
+    exhaustList.appendChild(exhaustItem);
+  });
+  exhaustList.addEventListener('click', (event) => {
+      if (event.target.classList.contains('add-to-cart-btn')) {
+          const exhaustIndex = event.target.getAttribute('data-index');
+          addToCart(exhaustIndex,exhaustsList);
       }
   });
 }
@@ -315,33 +393,33 @@ function updateCart() {
     cartItems.innerHTML = ''; // Clear current cart display
 
     // Create an object to store counts of each car
-    const carCounts = {};
+    const itemCounts = {};
 
     // Iterate through the cart items
-    cart.forEach((carItem) => {
-        const car = carItem[0];
-        carCounts[car.model] = (carCounts[car.model] || 0) + 1;
+    cart.forEach((cartItem) => {
+        const item = cartItem[0];
+        itemCounts[item.name] = (itemCounts[item.name] || 0) + 1;
     });
 
     // Create the cart items display
-    Object.keys(carCounts).forEach((model) => {
-        const carItem = cart.find(item => item[0].model === model);
-        const car = carItem[0];
-        const carIndex = carItem[1];
-        const count = carCounts[model];
+    Object.keys(itemCounts).forEach((name) => {
+        const cartItem = cart.find(item => item[0].name === name);
+        const item = cartItem[0];
+        const cartIndex = cartItem[1];
+        const count = itemCounts[name];
 
-        const carDiv = document.createElement('div');
-        carDiv.classList.add('car-item');
-        carDiv.dataset.index = carIndex;
-        carDiv.innerHTML = `
-            <img src="${car.image ? car.image : 'images/placeholder.png'}" alt="${car.model}">
-            <div class="car-title">${car.brand} ${car.model}</div>
-            <div class="car-price">${car.price}</div>
+        const itemDiv = document.createElement('div');
+        itemDiv.classList.add('car-item');
+        itemDiv.dataset.index = cartIndex;
+        itemDiv.innerHTML = `
+            <img src="${item.image ? item.image : 'images/placeholder.png'}" alt="${item.name}">
+            <div class="car-title">${item.name}</div>
+            <div class="car-price">€ ${item.price}</div>
             <div class="amount">Amount: ${count}</div>
-            <button class="remove-from-cart-btn" data-index="${carIndex}" data-model="${car.model}">Remove from Cart</button>
+            <button class="remove-from-cart-btn" data-index="${cartIndex}" data-name="${item.name}">Remove from Cart</button>
         `;
 
-        cartItems.appendChild(carDiv);
+        cartItems.appendChild(itemDiv);
     });
     const placeOrderButton = document.createElement('button');
     placeOrderButton.id = 'place-order-btn';
@@ -354,13 +432,13 @@ function updateCart() {
     const removeButtons = document.querySelectorAll('.remove-from-cart-btn');
     removeButtons.forEach((button) => {
         button.addEventListener('click', (event) => {
-            const carIndexToRemove = event.target.dataset.index;
-            const carModelToRemove = event.target.dataset.model;
+            const itemIndexToRemove = event.target.dataset.index;
+            const itemNameToRemove = event.target.dataset.name;
 
-            // Remove one instance of the car from the cart array
-            const carIndex = cart.findIndex(carItem => carItem[0].model === carModelToRemove && carItem[1] == carIndexToRemove);
-            if (carIndex !== -1) {
-                cart.splice(carIndex, 1); // Remove item from cart array
+            // Remove one instance of the item from the cart array
+            const itemIndex = cart.findIndex(cartItem => cartItem[0].name === itemNameToRemove && cartItem[1] == itemIndexToRemove);
+            if (itemIndex !== -1) {
+                cart.splice(itemIndex, 1); // Remove item from cart array
             }
 
             updateCart(); // Update the cart display
@@ -374,24 +452,31 @@ function placeOrder() {
         return;
     }
 
-    // Example of order data format
+    // Create order data in the correct format
     const orderData = {
-        items: cart.map(carItem => ({
-            car: carItem[0], // item object
+        items: cart.map(cartItem => ({
+            item: cartItem[0], // item object
         })),
-        // You can add more order details here, such as user information, order date, etc.
+        // Add more order details here, such as user information, order date, etc.
     };
 
-    // Send order data to the server (example with fetch)
+    console.log("Order data:", orderData);
+
+    // Send order data to the server
     fetch('/api/createOrder', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}` // Add token if needed
+            'Authorization': `Bearer ${authToken}`
         },
         body: JSON.stringify(orderData)
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => Promise.reject(err));
+        }
+        return response.json();
+    })
     .then(data => {
         alert('Order placed successfully!');
         cart.length = 0; // Clear the cart
@@ -402,6 +487,7 @@ function placeOrder() {
         alert('There was an error placing your order. Please try again.');
     });
 }
+
 
 document.addEventListener('DOMContentLoaded', function() {
     const cartButton = document.getElementById('cart-button');
