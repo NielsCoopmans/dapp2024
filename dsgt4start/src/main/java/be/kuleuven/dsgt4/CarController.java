@@ -43,4 +43,14 @@ public class CarController {
         }
     }
 
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<String> cancelOrder(@PathVariable UUID id) {
+        try {
+            supplierServiceCar.cancelCar(id);
+            return ResponseEntity.ok("Order cancelled successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Failed to cancel order: " + e.getMessage());
+        }
+    }
+
 }

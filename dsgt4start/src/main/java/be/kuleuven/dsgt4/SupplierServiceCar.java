@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 @Service
 public class SupplierServiceCar {
     private final WebClient webClient;
+    private static final String API_KEY = "Iw8zeveVyaPNWonPNaU0213uw3g6Ei";
 
     public SupplierServiceCar(WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.baseUrl("http://20.37.125.125:8089").build();
@@ -23,7 +24,10 @@ public class SupplierServiceCar {
 
     public Car[] getAllCars(){
         CollectionModel<EntityModel<Car>> carsModel = webClient.get()
-                .uri("/api/cars")
+                .uri(uriBuilder -> uriBuilder
+                        .path("api/cars")
+                        .queryParam("key", API_KEY)
+                        .build())
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<CollectionModel<EntityModel<Car>>>() {})
                 .block();
@@ -37,7 +41,10 @@ public class SupplierServiceCar {
 
     public Car getCarById(UUID id) {
         return webClient.get()
-                .uri("api/cars/" + id)
+                .uri(uriBuilder -> uriBuilder
+                        .path("api/cars/" + id)
+                        .queryParam("key", API_KEY)
+                        .build())
                 .retrieve()
                 .bodyToMono(Car.class)
                 .block();
@@ -45,7 +52,10 @@ public class SupplierServiceCar {
 
     public void orderCar(UUID id) {
         webClient.post()
-                .uri("api/cars/" + id + "/order")
+                .uri(uriBuilder -> uriBuilder
+                        .path("api/cars/" + id + "/order")
+                        .queryParam("key", API_KEY)
+                        .build())
                 .retrieve()
                 .bodyToMono(Void.class)
                 .block();
@@ -53,7 +63,21 @@ public class SupplierServiceCar {
 
     public void reserveCar(UUID id) {
         webClient.post()
-                .uri("api/cars/" + id + "/reserve")
+                .uri(uriBuilder -> uriBuilder
+                        .path("api/cars/" + id + "/reserve")
+                        .queryParam("key", API_KEY)
+                        .build())
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block();
+    }
+
+    public void cancelCar(UUID id) {
+        webClient.post()
+                .uri(uriBuilder -> uriBuilder
+                        .path("api/cars/" + id + "/cancel")
+                        .queryParam("key", API_KEY)
+                        .build())
                 .retrieve()
                 .bodyToMono(Void.class)
                 .block();
