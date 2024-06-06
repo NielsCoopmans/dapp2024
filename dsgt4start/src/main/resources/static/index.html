@@ -55,7 +55,7 @@
     <!-- Admin content here -->
 </div>
 
-<div class="page" id="contentdiv" style="display: none;">>
+<div class="page" id="contentdiv" style="display: none;">
     <div id="cart">
         <button id="cart-button" class="cart-icon-button">
             <svg id="cart-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -65,18 +65,24 @@
             </svg>
             <span id="cart-counter">0</span>
         </button>
-        <div id = "cart-div" style="display: none;">
+        <div id="cart-div" style="display: none;">
             <div id="cart-items" class="car-container" style="display: block;"></div>
         </div>
-
     </div>
+
+    <div id="navigation">
+        <button id="show-cars" class="nav-button" role="button"><span class="text">Car Shop</span></button>
+        <button id="show-exhausts" class="nav-button" role="button"><span class="text">Exhaust Shop</span></button>
+    </div>
+
     <div id="items">
-        <h1>Available Cars</h1>
+        <h1 id="car-list-title">Available Cars</h1>
         <div class="car-container" id="car-list"></div>
-        <h1>Available Exhausts</h1>
+        <h1 id="exhaust-list-title">Exhausts</h1>
         <div class="car-container" id="exhaust-list"></div>
     </div>
 </div>
+
 
 </body>
 </html>

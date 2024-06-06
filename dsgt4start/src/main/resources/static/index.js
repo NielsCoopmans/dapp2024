@@ -100,6 +100,20 @@ function wireGuiUpEvents() {
       document.getElementById("contentdiv").style.display = "none";
     } catch (err) { }
   });
+
+  document.getElementById('show-cars').addEventListener('click', function() {
+    document.getElementById('car-list').style.display = 'flex';
+    document.getElementById('car-list-title').style.display = 'flex';
+    document.getElementById('exhaust-list').style.display = 'none';
+    document.getElementById('exhaust-list-title').style.display = 'none';
+  });
+
+  document.getElementById('show-exhausts').addEventListener('click', function() {
+    document.getElementById('car-list').style.display = 'none';
+    document.getElementById('car-list-title').style.display = 'none';
+    document.getElementById('exhaust-list').style.display = 'flex';
+    document.getElementById('exhaust-list-title').style.display = 'flex';
+  });
 }
 
 document.addEventListener('DOMContentLoaded', function() {
