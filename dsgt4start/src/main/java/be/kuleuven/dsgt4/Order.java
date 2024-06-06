@@ -35,14 +35,6 @@ public class Order {
         this.carsCompleted = carsCompleted;
     }
 
-    public boolean isCompletedCars() {
-        return carsCompleted;
-    }
-
-    public void setCompletedCars(boolean carsCompleted) {
-        this.carsCompleted = carsCompleted;
-    }
-
     public int getId() {
         return id;
     }

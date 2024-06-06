@@ -16,17 +16,14 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/9.9.4/firebase-firestore.js";
 
-var emailInput = document.getElementById('email');
-var emailLabel = document.querySelector('label[for="email"]');
 let authToken = null;
-let isCarsDisplayed = false; // Flag to track if cars are already displayed
+let isCarsDisplayed = false;
 let isExhaustDisplayed = false;
-// we setup the authentication, and then wire up some key events to event handlers
+
 setupAuth();
 wireGuiUpEvents();
 wireUpAuthChange();
 
-//setup authentication with local or cloud configuration.
 function setupAuth() {
   let firebaseConfig;
   if (location.hostname === "localhost") {
@@ -40,7 +37,6 @@ function setupAuth() {
     };
   }
 
-  // signout any existing user. Removes any token still in the auth context
   const firebaseApp = initializeApp(firebaseConfig);
   const auth = getAuth(firebaseApp);
   const db = getFirestore(firebaseApp);
@@ -48,49 +44,40 @@ function setupAuth() {
   try {
     auth.signOut();
   } catch (err) { }
-  // Enable session persistence
 
   setPersistence(auth, browserSessionPersistence)
     .then(() => {
-      // Session persistence successfully set
       console.log("Session persistence enabled");
     })
     .catch((error) => {
-      // Error setting session persistence
       console.error("Error enabling session persistence:", error);
     });
-  // connect to local emulator when running on localhost
+
   if (location.hostname === "localhost") {
     connectAuthEmulator(auth, "http://localhost:8082", { disableWarnings: true });
   }
 }
 
 function wireGuiUpEvents() {
-  // Get references to the email and password inputs, and the sign in, sign out and sign up buttons
-  var email = document.getElementById("email");
-  var password = document.getElementById("password");
-  var signInButton = document.getElementById("btnSignIn");
-  var signUpButton = document.getElementById("btnSignUp");
-  var logoutButton = document.getElementById("btnLogout");
+  const email = document.getElementById("email");
+  const password = document.getElementById("password");
+  const signInButton = document.getElementById("btnSignIn");
+  const signUpButton = document.getElementById("btnSignUp");
+  const logoutButton = document.getElementById("btnLogout");
 
-  // Add event listeners to the sign in and sign up buttons
   signInButton.addEventListener("click", function () {
-    // Sign in the user using Firebase's signInWithEmailAndPassword method
     signInWithEmailAndPassword(getAuth(), email.value, password.value)
       .then(function () {
-        console.log("signedin");
-        //window.location.href = "/html/webshop.html";
+        console.log("signed in");
       })
       .catch(function (error) {
-        // Show an error message
-        console.log("error signInWithEmailAndPassword:")
+        console.log("error signInWithEmailAndPassword:");
         console.log(error.message);
         alert(error.message);
       });
   });
 
   signUpButton.addEventListener("click", function () {
-    // Sign up the user using Firebase's createUserWithEmailAndPassword method
     createUserWithEmailAndPassword(getAuth(), email.value, password.value)
       .then(function () {
         console.log("created");
@@ -100,7 +87,6 @@ function wireGuiUpEvents() {
         });
       })
       .catch(function (error) {
-        // Show an error message
         console.log("error createUserWithEmailAndPassword:");
         console.log(error.message);
         alert(error.message);
@@ -109,8 +95,7 @@ function wireGuiUpEvents() {
 
   logoutButton.addEventListener("click", function () {
     try {
-      var auth = getAuth();
-      auth.signOut();
+      getAuth().signOut();
       document.getElementById("logindiv").style.display = "block";
       document.getElementById("contentdiv").style.display = "none";
     } catch (err) { }
@@ -118,10 +103,9 @@ function wireGuiUpEvents() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    var emailInput = document.getElementById('email');
-    var emailLabel = document.querySelector('label[for="email"]');
+    const emailInput = document.getElementById('email');
+    const emailLabel = document.querySelector('label[for="email"]');
 
-    // Move the event listener setup for email input here
     emailInput.addEventListener('input', function() {
       if (this.value !== '') {
         emailLabel.classList.add('active');
@@ -130,77 +114,56 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
 
-    // Your remaining JavaScript code
-    // Ensure it's properly formatted and does not cause syntax errors.
+    const cartButton = document.getElementById('cart-button');
+    const cartItems = document.getElementById('cart-div');
+    const items = document.getElementById('items')
+
+    cartButton.addEventListener('click', function() {
+        if (cartItems.style.display === 'none') {
+            cartItems.style.display = 'block';
+            items.style.display = 'none'
+        } else {
+            items.style.display = 'block'
+            cartItems.style.display = 'none';
+        }
+    });
 });
 
-
 function wireUpAuthChange() {
-  var auth = getAuth();
+  const auth = getAuth();
   onAuthStateChanged(auth, (user) => {
     console.log("onAuthStateChanged");
-    if (user == null) {
-      console.log("user is null");
-      showUnAuthenticated();
-      return;
-    }
-    if (auth == null) {
-      console.log("auth is null");
-      showUnAuthenticated();
-      return;
-    }
-    if (auth.currentUser == null) {
-      console.log("currentUser is null");
-      showUnAuthenticated();
-      return;
-    }
-    if(auth.currentUser === undefined) {
-      console.log("currentUser is undefined ");
+    if (!user || !auth || !auth.currentUser) {
+      console.log("User or Auth context is null/undefined");
       showUnAuthenticated();
       return;
     }
     auth.currentUser.getIdTokenResult().then((idTokenResult) => {
         console.log("Hello " + auth.currentUser.email);
-
-        //update GUI when user is authenticated
         showAuthenticated(auth.currentUser.email);
-
-        //fetch data from server when authentication was successful.
-        var token = idTokenResult.token;
-        authToken = token;
-        fetchData(token);
+        authToken = idTokenResult.token;
+        fetchData(authToken);
     });
-
-
   });
 }
 
 async function createCustomer(email) {
   console.log("creating customer");
-
-    // Example of order data format
-    const customerData = {
-        email: email
-        // You can add more order details here, such as user information, order date, etc.
-    };
-
-    // Send order data to the server (example with fetch)
-    fetch('/api/createCustomer', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}` // Add token if needed
-        },
-        body: JSON.stringify(customerData)
-    })
-    .catch(error => {
-        console.error('Error crearing customer:', error);
-    });
+  const customerData = { email: email };
+  fetch('/api/createCustomer', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify(customerData)
+  })
+  .catch(error => {
+      console.error('Error creating customer:', error);
+  });
 }
 
 function fetchData(token) {
-  //fetchOrders(token);
-  //fetchCustomers(token);
   if (!isCarsDisplayed) {
       fetchCars(token);
   }
@@ -231,10 +194,8 @@ async function fetchOrders(token) {
 function displayOrders(orders) {
   console.log("displaying orders");
   const tbody = document.getElementById('orderTable').getElementsByTagName('tbody')[0];
-  console.log(orders);
   Object.entries(orders).forEach(([id, order]) => {
     const row = tbody.insertRow();
-
     const cellId = row.insertCell(0)
     const cellCustomer = row.insertCell(1);
     const cellItems = row.insertCell(2);
@@ -267,10 +228,8 @@ async function fetchCustomers(token) {
 function displayCustomers(customers) {
   console.log("displaying customers");
   const tbody = document.getElementById('customersTable').getElementsByTagName('tbody')[0];
-  console.log(customers);
   Object.entries(customers).forEach(([id, customer]) => {
     const row = tbody.insertRow();
-
     const cellId = row.insertCell(0)
     const cellName = row.insertCell(1);
     const cellEmail = row.insertCell(2);
@@ -305,10 +264,9 @@ async function fetchCars(token) {
 
 function displayCars(cars) {
   console.log("displaying cars");
-  console.log(cars);
   const carList = document.getElementById('car-list');
   const carsList = [];
-  cars.forEach( car => {
+  cars.forEach(car => {
     const carItem = document.createElement('div');
     carItem.classList.add('car-item');
     carsList.push(car)
@@ -324,11 +282,10 @@ function displayCars(cars) {
   carList.addEventListener('click', (event) => {
       if (event.target.classList.contains('add-to-cart-btn')) {
           const carIndex = event.target.getAttribute('data-index');
-          addToCart(carIndex,carsList);
+          addToCart(carIndex, carsList);
       }
   });
 }
-
 
 async function fetchExhausts(token) {
   console.log("fetching exhausts");
@@ -352,10 +309,9 @@ async function fetchExhausts(token) {
 
 function displayExhausts(exhausts) {
   console.log("displaying exhausts");
-  console.log(exhausts);
   const exhaustList = document.getElementById('exhaust-list');
   const exhaustsList = [];
-  exhausts.forEach( exhaust => {
+  exhausts.forEach(exhaust => {
     const exhaustItem = document.createElement('div');
     exhaustItem.classList.add('car-item');
     exhaustsList.push(exhaust)
@@ -372,15 +328,15 @@ function displayExhausts(exhausts) {
   exhaustList.addEventListener('click', (event) => {
       if (event.target.classList.contains('add-to-cart-btn')) {
           const exhaustIndex = event.target.getAttribute('data-index');
-          addToCart(exhaustIndex,exhaustsList);
+          addToCart(exhaustIndex, exhaustsList);
       }
   });
 }
 
-function addToCart(index,cars) {
+function addToCart(index, cars) {
     const car = cars[index];
     if (car) {
-        cart.push([car,index]);
+        cart.push([car, index]);
         updateCart();
     } else {
         console.error(`Car with index ${index} not found.`);
@@ -390,18 +346,15 @@ function addToCart(index,cars) {
 function updateCart() {
     const cartCounter = document.getElementById('cart-counter');
     const cartItems = document.getElementById('cart-items');
-    cartItems.innerHTML = ''; // Clear current cart display
+    cartItems.innerHTML = '';
 
-    // Create an object to store counts of each car
     const itemCounts = {};
 
-    // Iterate through the cart items
     cart.forEach((cartItem) => {
         const item = cartItem[0];
         itemCounts[item.name] = (itemCounts[item.name] || 0) + 1;
     });
 
-    // Create the cart items display
     Object.keys(itemCounts).forEach((name) => {
         const cartItem = cart.find(item => item[0].name === name);
         const item = cartItem[0];
@@ -421,6 +374,7 @@ function updateCart() {
 
         cartItems.appendChild(itemDiv);
     });
+
     const placeOrderButton = document.createElement('button');
     placeOrderButton.id = 'place-order-btn';
     placeOrderButton.textContent = 'Place Order';
@@ -428,20 +382,18 @@ function updateCart() {
     placeOrderButton.addEventListener('click', placeOrder);
     cartCounter.textContent = cart.length;
 
-    // Add event listeners for the remove buttons
     const removeButtons = document.querySelectorAll('.remove-from-cart-btn');
     removeButtons.forEach((button) => {
         button.addEventListener('click', (event) => {
             const itemIndexToRemove = event.target.dataset.index;
             const itemNameToRemove = event.target.dataset.name;
 
-            // Remove one instance of the item from the cart array
             const itemIndex = cart.findIndex(cartItem => cartItem[0].name === itemNameToRemove && cartItem[1] == itemIndexToRemove);
             if (itemIndex !== -1) {
-                cart.splice(itemIndex, 1); // Remove item from cart array
+                cart.splice(itemIndex, 1);
             }
 
-            updateCart(); // Update the cart display
+            updateCart();
         });
     });
 }
@@ -452,17 +404,12 @@ function placeOrder() {
         return;
     }
 
-    // Create order data in the correct format
     const orderData = {
-        items: cart.map(cartItem => ({
-            item: cartItem[0], // item object
-        })),
-        // Add more order details here, such as user information, order date, etc.
+        items: cart
     };
 
     console.log("Order data:", orderData);
 
-    // Send order data to the server
     fetch('/api/createOrder', {
         method: 'POST',
         headers: {
@@ -479,33 +426,14 @@ function placeOrder() {
     })
     .then(data => {
         alert('Order placed successfully!');
-        cart.length = 0; // Clear the cart
-        updateCart(); // Refresh the cart display
+        cart.length = 0;
+        updateCart();
     })
     .catch(error => {
         console.error('Error placing order:', error);
         alert('There was an error placing your order. Please try again.');
     });
 }
-
-
-document.addEventListener('DOMContentLoaded', function() {
-    const cartButton = document.getElementById('cart-button');
-    const cartItems = document.getElementById('cart-div');
-    const items = document.getElementById('items')
-
-    cartButton.addEventListener('click', function() {
-        // Toggle the display of cart items
-        if (cartItems.style.display === 'none') {
-            cartItems.style.display = 'block';
-            items.style.display = 'none'
-        } else {
-            items.style.display = 'block'
-            cartItems.style.display = 'none';
-        }
-    });
-
-});
 
 function showAuthenticated(username) {
   document.getElementById("namediv").innerHTML = "Hello " + username;
@@ -517,4 +445,4 @@ function showUnAuthenticated() {
   document.getElementById("namediv").innerHTML = "";
   document.getElementById("email").value = "";
   document.getElementById("contentdiv").style.display = "none";
-  }
+}

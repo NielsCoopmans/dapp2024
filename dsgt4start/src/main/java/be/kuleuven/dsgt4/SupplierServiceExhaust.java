@@ -38,40 +38,26 @@ public class SupplierServiceExhaust {
     }
 
     public boolean orderExhaust(Exhaust[] exhausts) {
-        try {
-            webClient.post()
-                    .uri("/restrpc/exhaustsystems/order")
-                    .body(BodyInserters.fromValue(exhausts))
-                    .retrieve()
-                    .bodyToMono(Void.class) // You can use the appropriate type if the response has a body
-                    .block();
-            return true;
-        } catch (WebClientResponseException e) {
-            // Handle WebClient-specific exceptions here
-            e.printStackTrace();
-            return false;
-        } catch (Exception e) {
-            // Handle other exceptions here
-            e.printStackTrace();
-            return false;
+        for(Exhaust exhaust: exhausts) {
+            try {
+                if(!Boolean.TRUE.equals(webClient.post()
+                        .uri(uriBuilder -> uriBuilder.path("/restrpc/exhaustsystems/order/{id}").build(exhaust.getId()))
+                        .body(BodyInserters.fromValue(exhausts))
+                        .retrieve()
+                        .bodyToMono(Boolean.class) // You can use the appropriate type if the response has a body
+                        .block())) {
+                    return false;
+                }
+            } catch (WebClientResponseException e) {
+                // Handle WebClient-specific exceptions here
+                e.printStackTrace();
+                return false;
+            } catch (Exception e) {
+                // Handle other exceptions here
+                e.printStackTrace();
+                return false;
+            }
         }
-    }
-
-    public boolean checkOrder(int OrderId) {
-        try {
-            return Boolean.TRUE.equals(webClient.get()
-                    .uri(uriBuilder -> uriBuilder.path("/restrpc/exhaustsystems/order/{id}").build(OrderId))
-                    .retrieve()
-                    .bodyToMono(Boolean.class)
-                    .block());
-        } catch (WebClientResponseException e) {
-            // Handle WebClient-specific exceptions here
-            e.printStackTrace();
-            return false;
-        } catch (Exception e) {
-            // Handle other exceptions here
-            e.printStackTrace();
-            return false;
-        }
+        return true;
     }
 }

@@ -53,7 +53,7 @@ public class SupplierServiceCar {
     public void orderCar(UUID id) {
         webClient.post()
                 .uri(uriBuilder -> uriBuilder
-                        .path("api/cars/" + id + "/order")
+                        .path("api/cars/" + id.toString() + "/order")
                         .queryParam("key", API_KEY)
                         .build())
                 .retrieve()

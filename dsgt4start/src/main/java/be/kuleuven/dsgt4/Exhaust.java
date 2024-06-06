@@ -1,11 +1,11 @@
 package be.kuleuven.dsgt4;
 
 public class Exhaust extends Item{
-    int id;
-    String name;
-    double price;
-    String brand;
-    int stock;
+    private int id;
+    private String name;
+    private double price;
+    private String brand;
+    private int stock;
 
     // Default constructor
     public Exhaust() {
@@ -42,7 +42,7 @@ public class Exhaust extends Item{
         return price;
     }
 
-    public void setPrice(Double price) {
+    public void setPrice(double price) {
         this.price = price;
     }
 

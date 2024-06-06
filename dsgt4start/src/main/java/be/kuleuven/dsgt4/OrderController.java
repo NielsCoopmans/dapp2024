@@ -17,11 +17,9 @@ import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.web.bind.annotation.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -51,17 +49,29 @@ public class OrderController {
     }
 
     @PostMapping("/api/createOrder")
-    public ResponseEntity<?> createOrder(@RequestBody Map<String, Object> orderData) {
+    public ResponseEntity<?> createOrder(@RequestBody Map<String, Object[]> orderData) {
         try {
 
             var user = WebSecurityConfig.getUser();
             String customerEmail = user.getEmail();
 
             ObjectMapper mapper = new ObjectMapper();
-            List<Item> items = mapper.convertValue(orderData.get("items"), new TypeReference<List<Item>>() {});
+            List<List<Object>> itemsWrapperList = mapper.convertValue(orderData.get("items"), new TypeReference<List<List<Object>>>() {});
 
-            if (customerEmail == null || items == null) {
-                return ResponseEntity.badRequest().body("Missing required fields: customerEmail or items");
+            List<Item> items = new ArrayList<>();
+
+            for (List<Object> wrappedItem : itemsWrapperList) {
+                if (wrappedItem != null && !wrappedItem.isEmpty() && wrappedItem.get(0) instanceof Map) {
+                    Map<String, Object> itemMap = (Map<String, Object>) wrappedItem.get(0);
+                    Item item = mapToItem(itemMap);
+                    if (item != null) {
+                        items.add(item);
+                    }
+                }
+            }
+
+            if (customerEmail == null) {
+                return ResponseEntity.badRequest().body("Missing required fields: customerEmail ");
             }
             int id = generateUniqueId();
             // Create order object
@@ -99,6 +109,35 @@ public class OrderController {
             return ResponseEntity.ok(order);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating order: " + e.getMessage());
+        }
+    }
+
+    private Item mapToItem(Map<String, Object> itemMap) {
+        String name = (String) itemMap.get("name");
+        Double price = null;
+        if (itemMap.get("price") instanceof Integer) {
+            price = ((Integer) itemMap.get("price")).doubleValue();
+        } else if (itemMap.get("price") instanceof Double) {
+            price = (Double) itemMap.get("price");
+        }
+        String brand = (String) itemMap.get("brand");
+        Status status = null;
+        if (itemMap.get("status") != null) {
+            status = Status.valueOf((String) itemMap.get("status"));
+        }
+
+        // Determine type and create appropriate item
+        if (status != null) {
+            UUID id = UUID.fromString((String) itemMap.get("id"));
+            String model = (String) itemMap.get("model");
+            String color = (String) itemMap.get("color");
+            int year = (int) itemMap.get("year");
+            String description = (String) itemMap.get("description");
+            return new Car(id,brand,model,color,year, price, name);
+        } else {
+            int id = (int) itemMap.get("id");
+            int stock = (int) itemMap.get("stock");
+            return new Exhaust(id, name, price, brand, stock);
         }
     }
 
@@ -148,7 +187,6 @@ public class OrderController {
         }
     }
 
-
     private void checkAndUpdateOrderCompletion(UUID orderId) throws ExecutionException, InterruptedException {
         var doc = db.collection("orders").document(orderId.toString()).get().get();
         Boolean carsCompleted = doc.getBoolean("carsCompleted");
@@ -159,20 +197,20 @@ public class OrderController {
         }
     }
 
-    public boolean checkOrderCars(int orderId){
-        return false;
-    }
-
     public boolean orderCars(Car[] cars) {
-        return false;
+        for(Car car: cars) {
+             try {
+                 supplierServiceCar.orderCar(car.getId());
+             } catch (Exception e) {
+                 System.out.println("error ordering cars: "+ car +" "+ e.getMessage());
+                 return false;
+             }
+        }
+        return true;
     }
 
     public boolean orderExhaust(Exhaust[] exhausts) {
         return supplierServiceExhaust.orderExhaust(exhausts);
-    }
-
-    public boolean checkOrderExhaust(int orderId){
-        return supplierServiceExhaust.checkOrder(orderId);
     }
 
     @PutMapping("/api/updateOrder/{orderId}")

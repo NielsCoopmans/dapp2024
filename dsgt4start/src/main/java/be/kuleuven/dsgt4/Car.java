@@ -1,12 +1,12 @@
 package be.kuleuven.dsgt4;
 
+import com.fasterxml.jackson.databind.deser.std.UUIDDeserializer;
+
 import java.util.Objects;
 import java.util.UUID;
 
 public class Car extends Item{
-    public enum Status {
-        AVAILABLE, RESERVED, ORDERED
-    }
+
     private UUID id;
     private String name;
     private String brand;
@@ -21,8 +21,9 @@ public class Car extends Item{
         super();
     }
 
-    public Car( String brand, String model, String color, int year, double price, String name) {
+    public Car(UUID id, String brand, String model, String color, int year, double price, String name) {
         super(name,price,brand);
+        this.id = id;
         this.name = name;
         this.brand = brand;
         this.model = model;
@@ -32,6 +33,7 @@ public class Car extends Item{
         this.description = name;
         this.status = Status.AVAILABLE;
     }
+
 
     public String getName() {
         return name;
