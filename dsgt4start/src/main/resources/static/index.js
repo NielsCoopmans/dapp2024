@@ -157,11 +157,48 @@ function wireUpAuthChange() {
         showAuthenticated(auth.currentUser.email);
         authToken = idTokenResult.token;
         fetchData(authToken);
+        fetchOrdersByEmail(auth.currentUser.email); // Fetch orders for logged-in user
         document.getElementById('exhaust-list-title').style.display = 'none';
         document.getElementById('exhaust-list').style.display = 'none';
     });
   });
 }
+
+async function fetchOrdersByEmail(email) {
+  console.log("fetching orders by email:", email);
+  try {
+    const response = await fetch(`/api/getOrdersByEmail/${email}`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${authToken}` }
+    });
+
+    if (response.ok) {
+      const orders = await response.json();
+      console.log(orders);
+      displayOrders(orders);
+    } else {
+      console.error('Failed to fetch orders:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+  }
+}
+
+function displayOrders(orders) {
+  console.log("displaying orders");
+  const tbody = document.getElementById('orderTable').getElementsByTagName('tbody')[0];
+  tbody.innerHTML = ''; // Clear existing rows
+  orders.forEach(order => {
+    const row = tbody.insertRow();
+    const cellId = row.insertCell(0);
+    const cellItems = row.insertCell(1);
+
+    cellId.textContent = order.id;
+    cellItems.innerHTML = order.items.map(item => `${item.name} - €${item.price}`).join('<br>');
+  });
+  document.getElementById('orders-div').style.display = 'block'; // Show orders div
+}
+
 
 async function createCustomer(email) {
   console.log("creating customer");
@@ -207,6 +244,7 @@ async function fetchOrders(token) {
   }
 }
 
+/*
 function displayOrders(orders) {
   console.log("displaying orders");
   const tbody = document.getElementById('orderTable').getElementsByTagName('tbody')[0];
@@ -220,7 +258,7 @@ function displayOrders(orders) {
     cellCustomer.textContent = order.customer.email;
     cellItems.textContent = order.items.map(item => item.productName).join(', ');
   });
-}
+}*/
 
 async function fetchCustomers(token) {
   console.log("fetching customers");
@@ -266,8 +304,11 @@ async function fetchCars(token) {
       headers: { Authorization: `Bearer ${token}` }
     });
 
+
     if (response.ok) {
+      document.querySelectorAll('.error').forEach(item => item.style.display = 'block');
       const cars = await response.json();
+      document.querySelectorAll('.error').forEach(item => item.style.display = 'none');
       displayCars(cars);
       isCarsDisplayed = true;
     } else {
@@ -459,6 +500,7 @@ function placeOrder() {
         console.error('Error placing order:', error);
         alert('There was an error placing your order. Please try again.');
     });
+    fetchOrdersByEmail(auth.currentUser.email);
 }
 
 function showAuthenticated(username) {
