@@ -6,6 +6,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
@@ -19,13 +20,12 @@ public class SupplierServiceCar {
     private static final String API_KEY = "Iw8zeveVyaPNWonPNaU0213uw3g6Ei";
 
     public SupplierServiceCar(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("http://20.37.125.125:8089").build();
+        this.webClient = webClientBuilder.baseUrl("http://20.37.125.125:8089/api/cars/").build();
     }
 
     public Car[] getAllCars(){
         CollectionModel<EntityModel<Car>> carsModel = webClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("api/cars")
                         .queryParam("key", API_KEY)
                         .build())
                 .retrieve()
@@ -42,7 +42,7 @@ public class SupplierServiceCar {
     public Car getCarById(UUID id) {
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("api/cars/" + id)
+                        .path( id.toString() )
                         .queryParam("key", API_KEY)
                         .build())
                 .retrieve()
@@ -51,20 +51,27 @@ public class SupplierServiceCar {
     }
 
     public void orderCar(UUID id) {
-        webClient.post()
+        ClientResponse response = webClient.post()
                 .uri(uriBuilder -> uriBuilder
-                        .path("api/cars/" + id.toString() + "/order")
+                        .path( id.toString() + "/order")
                         .queryParam("key", API_KEY)
                         .build())
-                .retrieve()
-                .bodyToMono(Void.class)
+                .exchange()
                 .block();
+
+        if (response.statusCode().isError()) {
+            System.err.println("Failed to order car: " + response.statusCode());
+            String responseBody = response.bodyToMono(String.class).block();
+            System.err.println("Response body: " + responseBody);
+        } else {
+            System.out.println("Car ordered successfully");
+        }
     }
 
     public void reserveCar(UUID id) {
         webClient.post()
                 .uri(uriBuilder -> uriBuilder
-                        .path("api/cars/" + id + "/reserve")
+                        .path( id.toString() + "/reserve")
                         .queryParam("key", API_KEY)
                         .build())
                 .retrieve()
@@ -75,7 +82,7 @@ public class SupplierServiceCar {
     public void cancelCar(UUID id) {
         webClient.post()
                 .uri(uriBuilder -> uriBuilder
-                        .path("api/cars/" + id + "/cancel")
+                        .path( id + "/cancel")
                         .queryParam("key", API_KEY)
                         .build())
                 .retrieve()

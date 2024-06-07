@@ -1,8 +1,10 @@
 package be.kuleuven.dsgt4;
 
+import be.kuleuven.dsgt4.auth.WebSecurityConfig;
 import com.google.cloud.firestore.Firestore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;

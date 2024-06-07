@@ -1,6 +1,11 @@
 package be.kuleuven.dsgt4.auth;
 
 import be.kuleuven.dsgt4.User;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,18 +30,48 @@ public class SecurityFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         // TODO: (level 1) decode Identity Token and assign correct email and role
         // TODO: (level 2) verify Identity Token
+        String token = getTokenFromRequest(request);
+        if (token != null && !token.isEmpty()) {
+            try {
+                // Level 2: Verify Identity Token
+                Algorithm algorithm = Algorithm.HMAC256("your-secret-key2");
+                JWTVerifier verifier = JWT.require(algorithm).build();
+                DecodedJWT jwt = verifier.verify(token);
 
-        var user = new User("nielscoopmans@gmail.com", "manager");
-        SecurityContext context = SecurityContextHolder.getContext();
-        context.setAuthentication(new FirebaseAuthentication(user));
+                // Level 1: Decode Identity Token and Assign Correct Email and Role
+                String email = jwt.getClaim("email").asString();
+                String role = jwt.getClaim("role").asString();
+
+                var user = new User(email, role);
+                SecurityContext context = SecurityContextHolder.getContext();
+                context.setAuthentication(new FirebaseAuthentication(user));
+            } catch (JWTVerificationException exception) {
+                // Invalid token
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+                return;
+            }
+        } else {
+            // No token found
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token not found");
+            return;
+        }
 
         filterChain.doFilter(request, response);
     }
+
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI().substring(request.getContextPath().length());
         return !path.startsWith("/api");
+    }
+
+    private String getTokenFromRequest(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 
     private static class FirebaseAuthentication implements Authentication {

@@ -59,13 +59,19 @@ public class OrderController {
             List<List<Object>> itemsWrapperList = mapper.convertValue(orderData.get("items"), new TypeReference<List<List<Object>>>() {});
 
             List<Item> items = new ArrayList<>();
-
+            List<Car> carsList = new ArrayList<>();
+            List<Exhaust> exhaustsList = new ArrayList<>();
             for (List<Object> wrappedItem : itemsWrapperList) {
                 if (wrappedItem != null && !wrappedItem.isEmpty() && wrappedItem.get(0) instanceof Map) {
                     Map<String, Object> itemMap = (Map<String, Object>) wrappedItem.get(0);
                     Item item = mapToItem(itemMap);
-                    if (item != null) {
+                    if (item instanceof Car) {
                         items.add(item);
+                        carsList.add((Car) item);
+                    }
+                    else if (item instanceof Exhaust) {
+                        items.add(item);
+                        exhaustsList.add((Exhaust) item);
                     }
                 }
             }
@@ -81,25 +87,19 @@ public class OrderController {
             // Save order to Firestore (assuming Ansys Cron is configured for this collection)
             db.collection("orders").document(orderId.toString()).set(order);
 
-            List<Car> cars = items.stream()
-                    .filter(item -> item instanceof Car)
-                    .map(item -> (Car) item)
-                    .toList();
+            Car[] cars = carsList.toArray(new Car[0]);
 
-            List<Exhaust> exhausts = items.stream()
-                    .filter(item -> item instanceof Exhaust)
-                    .map(item -> (Exhaust) item)
-                    .toList();
+            Exhaust[] exhausts = exhaustsList.toArray(new Exhaust[0]);
 
             // Check if either list is empty
-            if (!cars.isEmpty()) {
+            if (!(cars.length == 0)) {
                 scheduler.scheduleAtFixedRate(new OrderCarsTask(orderId, cars), 0, 10, TimeUnit.MINUTES);
             }
             else {
                 db.collection("orders").document(orderId.toString()).update("carsCompleted", true);
             }
 
-            if (!exhausts.isEmpty()) {
+            if (!(exhausts.length == 0)) {
                 scheduler.scheduleAtFixedRate(new OrderExhaustsTask(orderId, exhausts), 0, 10, TimeUnit.MINUTES);
             }
             else {
@@ -145,9 +145,9 @@ public class OrderController {
         private final UUID orderId;
         private final Car[] cars;
 
-        OrderCarsTask(UUID orderId, List<Car> cars) {
+        OrderCarsTask(UUID orderId, Car[] cars) {
             this.orderId = orderId;
-            this.cars = cars.toArray(new Car[0]);
+            this.cars = cars;
         }
 
         @Override
@@ -168,9 +168,9 @@ public class OrderController {
         private final UUID orderId;
         private final Exhaust[] exhausts;
 
-        OrderExhaustsTask(UUID orderId, List<Exhaust> exhausts) {
+        OrderExhaustsTask(UUID orderId, Exhaust[] exhausts) {
             this.orderId = orderId;
-            this.exhausts = exhausts.toArray(new Exhaust[0]);
+            this.exhausts = exhausts;
         }
 
         @Override

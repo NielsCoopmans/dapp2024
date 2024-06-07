@@ -282,24 +282,33 @@ function displayCars(cars) {
   console.log("displaying cars");
   const carList = document.getElementById('car-list');
   const carsList = [];
+
   cars.forEach(car => {
     const carItem = document.createElement('div');
     carItem.classList.add('car-item');
-    carsList.push(car)
-    carItem.innerHTML = `
-        <img src="${car.image ? car.image : 'images/placeholder.png'}" alt="${car.name}">
-        <div class="car-title">${car.name}</div>
-        <div class="car-price">€ ${car.price}</div>
-        <button class="add-to-cart-btn" data-index="${carsList.indexOf(car)}">Add to Cart</button>
+    carsList.push(car);
+
+    let carContent = `
+      <img src="${car.image ? car.image : 'images/placeholder.png'}" alt="${car.name}">
+      <div class="car-title">${car.name}</div>
+      <div class="car-price">€ ${car.price}</div>
     `;
 
+    if (car.status !== 'AVAILABLE') {
+      carContent += `<div class="car-status">${car.status}</div>`;
+    } else {
+      carContent += `<button class="add-to-cart-btn" data-index="${carsList.indexOf(car)}">Add to Cart</button>`;
+    }
+
+    carItem.innerHTML = carContent;
     carList.appendChild(carItem);
   });
+
   carList.addEventListener('click', (event) => {
-      if (event.target.classList.contains('add-to-cart-btn')) {
-          const carIndex = event.target.getAttribute('data-index');
-          addToCart(carIndex, carsList);
-      }
+    if (event.target.classList.contains('add-to-cart-btn')) {
+      const carIndex = event.target.getAttribute('data-index');
+      addToCart(carIndex, carsList);
+    }
   });
 }
 
@@ -376,12 +385,13 @@ function updateCart() {
         const item = cartItem[0];
         const cartIndex = cartItem[1];
         const count = itemCounts[name];
+        const imageUrl = item.image ? item.image : (car.hasOwnProperty('status') ? 'images/placeholder.png' : 'images/placeholderExhaust.jpg');
 
         const itemDiv = document.createElement('div');
         itemDiv.classList.add('car-item');
         itemDiv.dataset.index = cartIndex;
         itemDiv.innerHTML = `
-            <img src="${item.image ? item.image : 'images/placeholder.png'}" alt="${item.name}">
+            <img src="${imageUrl}" alt="${item.name}">
             <div class="car-title">${item.name}</div>
             <div class="car-price">€ ${item.price}</div>
             <div class="amount">Amount: ${count}</div>
