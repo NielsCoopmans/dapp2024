@@ -271,5 +271,40 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error: " + e.getMessage());
         }
     }
+
+    @GetMapping("/api/getOrdersByEmail/{email}")
+    public ResponseEntity<?> getOrdersByEmail(@PathVariable String email) {
+        Logger logger = LoggerFactory.getLogger(this.getClass());
+        try {
+            ApiFuture<QuerySnapshot> query = db.collection("orders")
+                    .whereEqualTo("customer.email", email)
+                    .get();
+            QuerySnapshot querySnapshot = query.get();
+            List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
+
+            List<Order> orders = new ArrayList<>();
+            Gson gson = new Gson();
+            Type customerType = new TypeToken<Customer>() {}.getType();
+            Type itemListType = new TypeToken<List<Item>>() {}.getType();
+
+            for (QueryDocumentSnapshot document : documents) {
+                Customer customer = gson.fromJson(gson.toJson(document.get("customer")), customerType);
+                List<Item> items = gson.fromJson(gson.toJson(document.get("items")), itemListType);
+                Boolean carsCompleted = document.getBoolean("carsCompleted");
+                Boolean exhaustsCompleted = document.getBoolean("exhaustsCompleted");
+                int id = document.get("id", Integer.TYPE);
+                Order order = new Order(id, customer, items, Boolean.TRUE.equals(carsCompleted), Boolean.TRUE.equals(exhaustsCompleted));
+                orders.add(order);
+            }
+
+            return ResponseEntity.ok(orders);
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("Error fetching orders", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching orders: " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected error", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error: " + e.getMessage());
+        }
+    }
 }
 
