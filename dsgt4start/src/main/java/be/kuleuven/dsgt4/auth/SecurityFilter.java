@@ -79,7 +79,6 @@ public class SecurityFilter extends OncePerRequestFilter {
         public void setAuthenticated(boolean b) throws IllegalArgumentException {
 
         }
-
         @Override
         public String getName() {
             return null;

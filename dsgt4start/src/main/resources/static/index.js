@@ -157,6 +157,8 @@ function wireUpAuthChange() {
         showAuthenticated(auth.currentUser.email);
         authToken = idTokenResult.token;
         fetchData(authToken);
+        document.getElementById('exhaust-list-title').style.display = 'none';
+        document.getElementById('exhaust-list').style.display = 'none';
     });
   });
 }
