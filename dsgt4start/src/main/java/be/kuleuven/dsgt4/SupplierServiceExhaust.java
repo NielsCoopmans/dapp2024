@@ -20,18 +20,20 @@ public class SupplierServiceExhaust {
     }
 
     public Exhaust[] getAllExhausts() {
-        List<Exhaust> exhausts = webClient.get()
-                .uri("/restrpc/exhaustsystems")
+        CollectionModel<EntityModel<Exhaust>> exhaustsModel = webClient.get()
+                .uri("/rest/exhaustsystems")
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<List<Exhaust>>() {})
+                .bodyToMono(new ParameterizedTypeReference<CollectionModel<EntityModel<Exhaust>>>() {})
                 .block();
-
+        List<Exhaust> exhausts = exhaustsModel.getContent().stream()
+                .map(EntityModel::getContent)
+                .collect(Collectors.toList());
         return exhausts.toArray(new Exhaust[0]);
     }
 
     public Exhaust getExhaustById(int id) {
         return webClient.get()
-                .uri("restrpc/exhaustsystems/" + id)
+                .uri("rest/exhaustsystems/" + id)
                 .retrieve()
                 .bodyToMono(Exhaust.class)
                 .block();
@@ -41,7 +43,7 @@ public class SupplierServiceExhaust {
         for(Exhaust exhaust: exhausts) {
             try {
                 if(!Boolean.TRUE.equals(webClient.post()
-                        .uri(uriBuilder -> uriBuilder.path("/restrpc/exhaustsystems/order/{id}").build(exhaust.getId()))
+                        .uri(uriBuilder -> uriBuilder.path("/rest/exhaustsystems/order/{id}").build(exhaust.getId()))
                         .body(BodyInserters.fromValue(exhausts))
                         .retrieve()
                         .bodyToMono(Boolean.class) // You can use the appropriate type if the response has a body
