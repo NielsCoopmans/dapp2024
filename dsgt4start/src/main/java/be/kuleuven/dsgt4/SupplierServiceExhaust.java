@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 @Service
 public class SupplierServiceExhaust {
     private final WebClient webClient;
+    private static final String API_KEY = "Iw8zeveVyaPNWonPNaU0213uw3g6Ei"; // Use the same API key
 
     public SupplierServiceExhaust(WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.baseUrl("http://40.125.67.223:8083").build();
@@ -21,7 +22,10 @@ public class SupplierServiceExhaust {
 
     public Exhaust[] getAllExhausts() {
         CollectionModel<EntityModel<Exhaust>> exhaustsModel = webClient.get()
-                .uri("/rest/exhaustsystems")
+                .uri(uriBuilder -> uriBuilder
+                        .path("/rest/exhaustsystems")
+                        .queryParam("key", API_KEY) // Include API key here
+                        .build())
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<CollectionModel<EntityModel<Exhaust>>>() {})
                 .block();
@@ -33,17 +37,23 @@ public class SupplierServiceExhaust {
 
     public Exhaust getExhaustById(int id) {
         return webClient.get()
-                .uri("rest/exhaustsystems/" + id)
+                .uri(uriBuilder -> uriBuilder
+                        .path("rest/exhaustsystems/" + id)
+                        .queryParam("key", API_KEY) // Include API key here
+                        .build())
                 .retrieve()
                 .bodyToMono(Exhaust.class)
                 .block();
     }
 
     public boolean orderExhaust(Exhaust[] exhausts) {
-        for(Exhaust exhaust: exhausts) {
+        for (Exhaust exhaust : exhausts) {
             try {
-                if(!Boolean.TRUE.equals(webClient.post()
-                        .uri(uriBuilder -> uriBuilder.path("/rest/exhaustsystems/order/{id}").build(exhaust.getId()))
+                if (!Boolean.TRUE.equals(webClient.post()
+                        .uri(uriBuilder -> uriBuilder
+                                .path("/rest/exhaustsystems/order/{id}")
+                                .queryParam("key", API_KEY) // Include API key here
+                                .build(exhaust.getId()))
                         .body(BodyInserters.fromValue(exhausts))
                         .retrieve()
                         .bodyToMono(Boolean.class) // You can use the appropriate type if the response has a body
