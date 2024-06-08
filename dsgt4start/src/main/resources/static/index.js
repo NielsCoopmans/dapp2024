@@ -81,7 +81,7 @@ function wireGuiUpEvents() {
     createUserWithEmailAndPassword(getAuth(), email.value, password.value)
       .then(function () {
         console.log("created");
-        getAuth().currentUser.getIdTokenResult().then((idTokenResult) => {
+        getAuth().currentUser.getIdTokenResult("true").then((idTokenResult) => {
             authToken = idTokenResult.token;
             createCustomer(email.value);
         });
@@ -152,10 +152,11 @@ function wireUpAuthChange() {
       showUnAuthenticated();
       return;
     }
-    auth.currentUser.getIdTokenResult().then((idTokenResult) => {
+    auth.currentUser.getIdTokenResult("true").then((idTokenResult) => {
         console.log("Hello " + auth.currentUser.email);
         showAuthenticated(auth.currentUser.email);
         authToken = idTokenResult.token;
+        console.log(authToken);
         fetchData(authToken);
         fetchOrdersByEmail(auth.currentUser.email); // Fetch orders for logged-in user
         document.getElementById('exhaust-list-title').style.display = 'none';

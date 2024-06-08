@@ -6,6 +6,8 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -26,39 +28,43 @@ import java.util.List;
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
 
+    private static final Logger logger = LoggerFactory.getLogger(SecurityFilter.class);
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // TODO: (level 1) decode Identity Token and assign correct email and role
-        // TODO: (level 2) verify Identity Token
         String token = getTokenFromRequest(request);
+        System.out.println("Token from request: {}" + token);
+
         if (token != null && !token.isEmpty()) {
             try {
-                // Level 2: Verify Identity Token
-                Algorithm algorithm = Algorithm.HMAC256("your-secret-key2");
+                //Algorithm algorithm = Algorithm.HMAC256("dapp2024");
+                Algorithm algorithm = Algorithm.none();
                 JWTVerifier verifier = JWT.require(algorithm).build();
                 DecodedJWT jwt = verifier.verify(token);
+                System.out.println("JWT verified successfully");
 
-                // Level 1: Decode Identity Token and Assign Correct Email and Role
                 String email = jwt.getClaim("email").asString();
                 String role = jwt.getClaim("role").asString();
+                System.out.println("Email from token: {}" + email);
+                System.out.println("Role from token: {}" + role);
 
                 var user = new User(email, role);
                 SecurityContext context = SecurityContextHolder.getContext();
                 context.setAuthentication(new FirebaseAuthentication(user));
+                System.out.println("Security context set with user: {}" + user.getEmail());
             } catch (JWTVerificationException exception) {
-                // Invalid token
+                logger.error("Invalid token", exception);
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
                 return;
             }
         } else {
-            // No token found
+            logger.warn("Token not found");
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token not found");
             return;
         }
 
         filterChain.doFilter(request, response);
     }
-
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -120,4 +126,3 @@ public class SecurityFilter extends OncePerRequestFilter {
         }
     }
 }
-
