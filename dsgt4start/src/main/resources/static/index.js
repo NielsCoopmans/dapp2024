@@ -427,7 +427,7 @@ function updateCart() {
         const item = cartItem[0];
         const cartIndex = cartItem[1];
         const count = itemCounts[name];
-        const imageUrl = item.image ? item.image : (car.hasOwnProperty('status') ? 'images/placeholder.png' : 'images/placeholderExhaust.jpg');
+        const imageUrl = item.image ? item.image : (item.hasOwnProperty('status') ? 'images/placeholder.png' : 'images/placeholderExhaust.jpg');
 
         const itemDiv = document.createElement('div');
         itemDiv.classList.add('car-item');
