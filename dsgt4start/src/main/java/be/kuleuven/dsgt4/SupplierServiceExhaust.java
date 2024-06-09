@@ -5,6 +5,7 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
@@ -56,28 +57,35 @@ public class SupplierServiceExhaust {
 
     public boolean orderExhaust(Exhaust[] exhausts) {
         for (Exhaust exhaust : exhausts) {
-            try {
-                if (!Boolean.TRUE.equals(webClient.post()
-                        .uri(uriBuilder -> uriBuilder
-                                .path("/rest/exhaustsystems/order/{id}")
-                                .queryParam("key", API_KEY) // Include API key here
-                                .build(exhaust.getId()))
-                        .body(BodyInserters.fromValue(exhausts))
-                        .retrieve()
-                        .bodyToMono(Boolean.class) // You can use the appropriate type if the response has a body
-                        .block())) {
-                    return false;
+            ClientResponse response = webClient.post()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/rest/exhaustsystems/order/{id}")
+                            .queryParam("key", API_KEY)
+                            .build(exhaust.getId()))
+                    .exchange()
+                    .block();
+
+            if (response == null || response.statusCode().value() != 200) {
+                System.err.println("Failed to order exhaust: " + (response != null ? response.statusCode() : "No response"));
+                if (response != null) {
+                    String responseBody = response.bodyToMono(String.class).block();
+                    System.err.println("Response body: " + responseBody);
                 }
-            } catch (WebClientResponseException e) {
-                // Handle WebClient-specific exceptions here
-                e.printStackTrace();
-                return false;
-            } catch (Exception e) {
-                // Handle other exceptions here
-                e.printStackTrace();
                 return false;
             }
         }
         return true;
+    }
+
+
+    public void cancelOrder(int id) {
+        ClientResponse response = webClient.post()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/rest/exhaustsystems/cancel/{id}")
+                        .queryParam("key", API_KEY)
+                        .build(id))
+                .exchange()
+                .block();
+
     }
 }
