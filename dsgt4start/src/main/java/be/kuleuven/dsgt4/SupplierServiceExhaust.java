@@ -46,6 +46,14 @@ public class SupplierServiceExhaust {
                 .block();
     }
 
+    public boolean currentStockExhaust(int id) {
+        Exhaust exhaust = getExhaustById(id);
+        if(exhaust != null && exhaust.getStock() > 0) {
+            return true;
+        }
+        return false;
+    }
+
     public boolean orderExhaust(Exhaust[] exhausts) {
         for (Exhaust exhaust : exhausts) {
             try {

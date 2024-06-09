@@ -91,22 +91,27 @@ public class OrderController {
 
             Exhaust[] exhausts = exhaustsList.toArray(new Exhaust[0]);
 
-            // Check if either list is empty
-            if (!(cars.length == 0)) {
-                scheduler.scheduleAtFixedRate(new OrderCarsTask(orderId, cars), 0, 10, TimeUnit.MINUTES);
-            }
-            else {
-                db.collection("orders").document(orderId.toString()).update("carsCompleted", true);
-            }
+            // Reserve items first
+            if(reserveCars(cars) && checkStockExhaust(exhausts)) {
+                // Schedule tasks to order items
+                if (cars.length > 0) {
+                    scheduler.scheduleAtFixedRate(new OrderCarsTask(orderId, cars), 0, 10, TimeUnit.MINUTES);
+                } else {
+                    db.collection("orders").document(orderId.toString()).update("carsCompleted", true);
+                }
 
-            if (!(exhausts.length == 0)) {
-                scheduler.scheduleAtFixedRate(new OrderExhaustsTask(orderId, exhausts), 0, 10, TimeUnit.MINUTES);
-            }
-            else {
-                db.collection("orders").document(orderId.toString()).update("exhaustsCompleted", true);
-            }
+                if (exhausts.length > 0) {
+                    scheduler.scheduleAtFixedRate(new OrderExhaustsTask(orderId, exhausts), 0, 10, TimeUnit.MINUTES);
+                } else {
+                    db.collection("orders").document(orderId.toString()).update("exhaustsCompleted", true);
+                }
 
-            return ResponseEntity.ok(order);
+                return ResponseEntity.ok(order);
+            } else {
+                // Rollback reservations if reservation fails
+                cancelCarReservations(cars);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error reserving items.");
+            }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating order: " + e.getMessage());
         }
@@ -205,6 +210,37 @@ public class OrderController {
                  System.out.println("error ordering cars: "+ car +" "+ e.getMessage());
                  return false;
              }
+        }
+        return true;
+    }
+
+    public boolean reserveCars(Car[] cars) {
+        for(Car car: cars) {
+             try {
+                 supplierServiceCar.reserveCar(car.getId());
+             } catch (Exception e) {
+                 System.out.println("error reserving cars: "+ car +" "+ e.getMessage());
+                 return false;
+             }
+        }
+        return true;
+    }
+
+    public void cancelCarReservations(Car[] cars) {
+        for(Car car: cars) {
+             try {
+                 supplierServiceCar.cancelCar(car.getId());
+             } catch (Exception e) {
+                 System.out.println("error cancelling cars: "+ car +" "+ e.getMessage());
+             }
+        }
+    }
+
+    private boolean checkStockExhaust(Exhaust[] exhausts) {
+        for (Exhaust exhaust : exhausts) {
+            if (!supplierServiceExhaust.currentStockExhaust(exhaust.getId())) {
+                return false;
+            }
         }
         return true;
     }
