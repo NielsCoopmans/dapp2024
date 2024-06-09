@@ -381,25 +381,33 @@ function displayExhausts(exhausts) {
   exhausts.forEach(exhaust => {
     const exhaustItem = document.createElement('div');
     exhaustItem.classList.add('car-item');
-    exhaustsList.push(exhaust)
+    exhaustsList.push(exhaust);
+
+    let buttonHtml = '';
+    if (exhaust.stock > 0) {
+      buttonHtml = `<button class="add-to-cart-btn" data-index="${exhaustsList.indexOf(exhaust)}">Add to Cart</button>`;
+    } else {
+      buttonHtml = `<button class="add-to-cart-btn" data-index="${exhaustsList.indexOf(exhaust)}" disabled>Out of Stock</button>`;
+    }
+
     exhaustItem.innerHTML = `
         <img src="${exhaust.image ? exhaust.image : 'images/placeholderExhaust.jpg'}" alt="${exhaust.name}">
         <div class="car-title">${exhaust.name}</div>
         <div class="car-price">€ ${exhaust.price}</div>
         <div class="stock">Remaining stock: ${exhaust.stock}</div>
-        <button class="add-to-cart-btn" data-index="${exhaustsList.indexOf(exhaust)}">Add to Cart</button>
+        ${buttonHtml}
     `;
 
     exhaustList.appendChild(exhaustItem);
   });
+
   exhaustList.addEventListener('click', (event) => {
-      if (event.target.classList.contains('add-to-cart-btn')) {
-          const exhaustIndex = event.target.getAttribute('data-index');
-          addToCart(exhaustIndex, exhaustsList);
-      }
+    if (event.target.classList.contains('add-to-cart-btn') && !event.target.disabled) {
+      const exhaustIndex = event.target.getAttribute('data-index');
+      addToCart(exhaustIndex, exhaustsList);
+    }
   });
 }
-
 function addToCart(index, cars) {
     const car = cars[index];
     if (car) {
