@@ -513,8 +513,16 @@ function placeOrder() {
         body: JSON.stringify(orderData)
     })
     .then(response => {
+        console.log(response);
         if (!response.ok) {
-            return response.json().then(err => Promise.reject(err));
+            return response.text().then(err => {
+                try {
+                    const jsonError = JSON.parse(err);
+                    return Promise.reject(jsonError);
+                } catch (e) {
+                    return Promise.reject({ message: err });
+                }
+            });
         }
         return response.json();
     })
@@ -528,10 +536,16 @@ function placeOrder() {
     })
     .catch(error => {
         console.error('Error placing order:', error);
-        alert('There was an error placing your order. Please try again.');
+        if (error && error.message) {
+            alert(`There was an error placing your order: ${error.message}`);
+        } else {
+            alert('There was an error placing your order. Please try again.');
+        }
     });
     fetchOrdersByEmail(auth.currentUser.email);
 }
+
+
 
 function shopDisplay(){
     document.getElementById("logindiv").style.display = "none";
