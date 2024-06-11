@@ -20,6 +20,7 @@ let authToken = null;
 let isCarsDisplayed = false;
 let isExhaustDisplayed = false;
 let auth = null;
+const cart = [];
 
 setupAuth();
 wireGuiUpEvents();
@@ -309,8 +310,6 @@ function displayCustomers(customers) {
   });
 }
 
-const cart = [];
-
 async function fetchCars(token) {
     const carList = document.getElementById('car-list');
     carList.innerHTML = "";
@@ -430,6 +429,7 @@ function addToCart(index, cars) {
     const car = cars[index];
     if (car) {
         cart.push([car, index]);
+        console.log(cart);
         updateCart();
     } else {
         console.error(`Car with index ${index} not found.`);
@@ -486,11 +486,15 @@ function updateCart() {
             if (itemIndex !== -1) {
                 cart.splice(itemIndex, 1);
             }
-
             updateCart();
+            if (cart.length == 0){
+                refreshPage();
+            }
         });
     });
 }
+
+
 
 function placeOrder() {
     if (cart.length === 0) {
@@ -536,6 +540,7 @@ function placeOrder() {
     })
     .catch(error => {
         console.error('Error placing order:', error);
+        refreshPage();
         if (error && error.message) {
             alert(`There was an error placing your order: ${error.message}`);
         } else {
@@ -543,8 +548,17 @@ function placeOrder() {
         }
     });
     fetchOrdersByEmail(auth.currentUser.email);
+    refreshPage();
 }
 
+function resetCart(){
+    for (const i in cart){
+        const index = cart.indexOf(i);
+        if (index > -1) { // only splice array when item is found
+          cart.splice(index, 1); // 2nd parameter means remove one item only
+        }
+    }
+}
 
 
 function shopDisplay(){
@@ -564,3 +578,18 @@ function showUnAuthenticated() {
   document.getElementById("email").value = "";
   document.getElementById("contentdiv").style.display = "none";
 }
+
+function refreshPage() {
+    const carItems = document.querySelectorAll('.car-item');
+    carItems.forEach(carItem => {
+        //carItem.remove();
+    });
+    items.style.display = 'block';
+    document.getElementById('car-list').style.display = 'flex';
+    document.getElementById('car-list-title').style.display = 'flex';
+    document.getElementById('exhaust-list').style.display = 'none';
+    document.getElementById('exhaust-list-title').style.display = 'none';
+    document.getElementById('cart-div').style.display = 'none';
+    fetchData();
+}
+
