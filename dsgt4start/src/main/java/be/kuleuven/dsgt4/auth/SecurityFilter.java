@@ -9,6 +9,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -28,38 +29,49 @@ import java.util.List;
 
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
+    @Autowired
+    Boolean isProduction;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         // TODO: (level 1) decode Identity Token and assign correct email and role
         // TODO: (level 2) verify Identity Token
         String token = getTokenFromRequest(request);
-        if (token != null && !token.isEmpty()) {
-            try {
-                FirebaseToken decoded = FirebaseAuth.getInstance().verifyIdToken(token);
+        if (isProduction) {
+            if (token != null && !token.isEmpty()) {
+                try {
+                    FirebaseToken decoded = FirebaseAuth.getInstance().verifyIdToken(token);
 
-                // Decode Identity Token and Assign Correct Email and Role
-                String email = decoded.getEmail();
-                String role = (String) decoded.getClaims().get("role");
+                    // Decode Identity Token and Assign Correct Email and Role
+                    String email = decoded.getEmail();
+                    String role = (String) decoded.getClaims().get("role");
 
-                // Create User object with email and role
-                var user = new User(email, role);
-                // Create FirebaseAuthentication object with user details
-                FirebaseAuthentication authentication = new FirebaseAuthentication(user);
+                    // Create User object with email and role
+                    var user = new User(email, role);
+                    // Create FirebaseAuthentication object with user details
+                    FirebaseAuthentication authentication = new FirebaseAuthentication(user);
 
-                // Set the authentication object in the SecurityContext
-                SecurityContext context = SecurityContextHolder.getContext();
-                context.setAuthentication(authentication);
-            } catch (FirebaseAuthException e) {
-                // If token verification fails, return unauthorized error
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+                    // Set the authentication object in the SecurityContext
+                    SecurityContext context = SecurityContextHolder.getContext();
+                    context.setAuthentication(authentication);
+                } catch (FirebaseAuthException e) {
+                    // If token verification fails, return unauthorized error
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+                    return;
+                }
+            } else {
+                // No token found, return unauthorized error
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token not found");
                 return;
             }
-        } else {
-            // No token found, return unauthorized error
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token not found");
-            return;
         }
+        else {
+            var user = new User("email", "manager");
+            FirebaseAuthentication authentication = new FirebaseAuthentication(user);
+            SecurityContext context = SecurityContextHolder.getContext();
+            context.setAuthentication(authentication);
+        }
+
 
         filterChain.doFilter(request, response);
     }

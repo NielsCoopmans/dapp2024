@@ -34,7 +34,7 @@ public class UserService {
         } catch (FirebaseAuthException e) {
             UserRecord.CreateRequest request = new UserRecord.CreateRequest()
                     .setEmail(email)
-                    .setPassword("admin");
+                    .setPassword("admin123");
 
             userRecord = FirebaseAuth.getInstance().createUser(request);
         }
