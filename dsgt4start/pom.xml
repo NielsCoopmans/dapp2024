@@ -8,13 +8,29 @@
 	<version>2.0</version>
 	<name>dsgt4</name>
 	<description>DSGT4</description>
+	<profiles>
+		<profile>
+			<id>dev</id>
+			<properties>
+				<env.google.FIREBASE_AUTH_EMULATOR_HOST>=http://localhost:8082</env.google.FIREBASE_AUTH_EMULATOR_HOST>
+				<env.google.GCLOUD_PROJECT>=demo-distributed-systems-kul</env.google.GCLOUD_PROJECT>
+				<env.google.GOOGLE_APPLICATION_CREDENTIALS>=dsgt4start/src/main/resources/dapp4-demo-firebase-adminsdk-r3pa1-8d4be86c34.json</env.google.GOOGLE_APPLICATION_CREDENTIALS>
+			</properties>
+		</profile>
+		<profile>
+			<id>prod</id>
+			<properties>
+				<env.google.application_credentials>=dapp4-demo-firebase-adminsdk-r3pa1-8d4be86c34.json</env.google.application_credentials>
+			</properties>
+		</profile>
+	</profiles>
 	<properties>
 		<!--
      *************************************************************
         Please set the following parameter for the filename
         for the final zip to `cloud-[1 or 2].[firstname].[lastname]`.
      ************************************************************* -->
-		<zip.filename>cloud-2.firstname.lastname</zip.filename>
+		<zip.filename>cloud-2.niels.coopmans</zip.filename>
 
 		<java.version>17</java.version>
 		<maven.compiler.target>17</maven.compiler.target>
@@ -32,6 +48,7 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
             <dependency>
                 <groupId>com.google.cloud</groupId>
                 <artifactId>libraries-bom</artifactId>
@@ -39,6 +56,9 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+
+
 		</dependencies>
     </dependencyManagement>
     
@@ -89,6 +109,19 @@
 			<groupId>com.google.cloud</groupId>
 			<artifactId>google-cloud-firestore</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>com.google.firebase</groupId>
+			<artifactId>firebase-admin</artifactId>
+			<version>9.3.0</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>com.google.cloud</groupId>
+			<artifactId>google-cloud-secretmanager</artifactId>
+		</dependency>
+
 
 		<dependency>
 			<groupId>com.auth0</groupId>
@@ -149,8 +182,9 @@
 				<version>2.4.4</version>
 				<configuration>
 					<version>1</version>
-					<projectId>TODO-level-2</projectId>
-					<cloudSdkVersion>404.0.0</cloudSdkVersion>
+					<projectId>dapp4-demo</projectId>
+					<cloudSdkVersion>472.0.0</cloudSdkVersion>
+					<cloudSdkHome>/home/niels/Downloads/google-cloud-sdk</cloudSdkHome>
 				</configuration>
 			</plugin>
 		</plugins>

@@ -19,6 +19,7 @@ import {
 let authToken = null;
 let isCarsDisplayed = false;
 let isExhaustDisplayed = false;
+let auth = null;
 
 setupAuth();
 wireGuiUpEvents();
@@ -32,13 +33,21 @@ function setupAuth() {
       projectId: "demo-distributed-systems-kul",
     };
   } else {
-    firebaseConfig = {
-      // TODO: for level 2, paste your config here
-    };
+        firebaseConfig = {
+          apiKey: "AIzaSyDlduNuPpAl43vRXyBIkJoPxJ3QYsxCn4Q",
+          authDomain: "dapp4-demo.firebaseapp.com",
+          projectId: "dapp4-demo",
+          storageBucket: "dapp4-demo.appspot.com",
+          messagingSenderId: "436068667",
+          appId: "1:436068667:web:ddf6b31c48d127c00b971e",
+          measurementId: "G-0NR5TDMD0V"
+        };
+
+    console.log("dapp4-demo");
   }
 
   const firebaseApp = initializeApp(firebaseConfig);
-  const auth = getAuth(firebaseApp);
+  auth = getAuth(firebaseApp);
   const db = getFirestore(firebaseApp);
 
   try {
@@ -56,6 +65,7 @@ function setupAuth() {
   if (location.hostname === "localhost") {
     connectAuthEmulator(auth, "http://localhost:8082", { disableWarnings: true });
   }
+
 }
 
 function wireGuiUpEvents() {
@@ -144,16 +154,17 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function wireUpAuthChange() {
-  const auth = getAuth();
+  auth = getAuth();
   onAuthStateChanged(auth, (user) => {
     console.log("onAuthStateChanged");
-    if (!user || !auth || !auth.currentUser) {
+    if (!user || !auth || auth.currentUser === null) {
       console.log("User or Auth context is null/undefined");
       showUnAuthenticated();
       return;
     }
     auth.currentUser.getIdTokenResult("true").then((idTokenResult) => {
         console.log("Hello " + auth.currentUser.email);
+        console.log("userRole: "+ auth.currentUser.role);
         showAuthenticated(auth.currentUser.email);
         authToken = idTokenResult.token;
         console.log(authToken);
@@ -163,6 +174,7 @@ function wireUpAuthChange() {
         document.getElementById('exhaust-list').style.display = 'none';
     });
   });
+
 }
 
 async function fetchOrdersByEmail(email) {
@@ -298,6 +310,8 @@ function displayCustomers(customers) {
 const cart = [];
 
 async function fetchCars(token) {
+    carList = document.getElementById('car-list');
+    carList.innerHTML = "";
   console.log("fetching cars");
   try {
     const response = await fetch('/api/broker/cars', {
@@ -355,6 +369,8 @@ function displayCars(cars) {
 }
 
 async function fetchExhausts(token) {
+    exhaustList = document.getElementById('exhaust-list');
+    carexhaustList.innerHTML = "";
   console.log("fetching exhausts");
   try {
     const response = await fetch('/api/broker/exhausts', {
@@ -504,12 +520,21 @@ function placeOrder() {
         alert('Order placed successfully!');
         cart.length = 0;
         updateCart();
+        fetchCars();
+        fetchExhausts();
+        shopDisplay();
     })
     .catch(error => {
         console.error('Error placing order:', error);
         alert('There was an error placing your order. Please try again.');
     });
     fetchOrdersByEmail(auth.currentUser.email);
+}
+
+function shopDisplay(){
+    document.getElementById("logindiv").style.display = "block";
+    document.getElementById("contentdiv").style.display = "none";
+    document.getElementById("cart-div").style.display = "none";
 }
 
 function showAuthenticated(username) {

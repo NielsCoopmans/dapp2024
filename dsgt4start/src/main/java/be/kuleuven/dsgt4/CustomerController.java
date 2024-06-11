@@ -24,8 +24,6 @@ public class CustomerController {
     @Autowired
     Firestore db;
 
-
-
     @PostMapping("/api/createCustomer")
     public void createOrder(@RequestBody Map<String, Object> customerData) {
         UUID customerId = UUID.randomUUID();

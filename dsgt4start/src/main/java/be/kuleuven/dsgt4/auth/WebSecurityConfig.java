@@ -1,6 +1,7 @@
 package be.kuleuven.dsgt4.auth;
 
 import be.kuleuven.dsgt4.User;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
