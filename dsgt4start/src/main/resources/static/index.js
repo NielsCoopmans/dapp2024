@@ -116,6 +116,7 @@ function wireGuiUpEvents() {
     document.getElementById('car-list-title').style.display = 'flex';
     document.getElementById('exhaust-list').style.display = 'none';
     document.getElementById('exhaust-list-title').style.display = 'none';
+    document.getElementById('cart-div').style.display = 'none';
   });
 
   document.getElementById('show-exhausts').addEventListener('click', function() {
@@ -123,6 +124,7 @@ function wireGuiUpEvents() {
     document.getElementById('car-list-title').style.display = 'none';
     document.getElementById('exhaust-list').style.display = 'flex';
     document.getElementById('exhaust-list-title').style.display = 'flex';
+    document.getElementById('cart-div').style.display = 'none';
   });
 }
 
@@ -310,7 +312,7 @@ function displayCustomers(customers) {
 const cart = [];
 
 async function fetchCars(token) {
-    carList = document.getElementById('car-list');
+    const carList = document.getElementById('car-list');
     carList.innerHTML = "";
   console.log("fetching cars");
   try {
@@ -369,8 +371,8 @@ function displayCars(cars) {
 }
 
 async function fetchExhausts(token) {
-    exhaustList = document.getElementById('exhaust-list');
-    carexhaustList.innerHTML = "";
+    const exhaustList = document.getElementById('exhaust-list');
+    exhaustList.innerHTML = "";
   console.log("fetching exhausts");
   try {
     const response = await fetch('/api/broker/exhausts', {
@@ -520,8 +522,8 @@ function placeOrder() {
         alert('Order placed successfully!');
         cart.length = 0;
         updateCart();
-        fetchCars();
-        fetchExhausts();
+        fetchCars(authToken);
+        fetchExhausts(authToken);
         shopDisplay();
     })
     .catch(error => {
@@ -532,8 +534,8 @@ function placeOrder() {
 }
 
 function shopDisplay(){
-    document.getElementById("logindiv").style.display = "block";
-    document.getElementById("contentdiv").style.display = "none";
+    document.getElementById("logindiv").style.display = "none";
+    document.getElementById("contentdiv").style.display = "block";
     document.getElementById("cart-div").style.display = "none";
 }
 
