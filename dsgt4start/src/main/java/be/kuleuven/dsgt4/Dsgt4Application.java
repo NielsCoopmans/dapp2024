@@ -77,9 +77,7 @@ public class Dsgt4Application {
 
 
 		}
-		else {
-            return null;
-		}
+		return null;
 	}
 
 	@Bean

@@ -1,11 +1,7 @@
 package be.kuleuven.dsgt4.auth;
 
 import be.kuleuven.dsgt4.User;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
@@ -23,9 +19,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
@@ -45,7 +39,6 @@ public class SecurityFilter extends OncePerRequestFilter {
                     // Decode Identity Token and Assign Correct Email and Role
                     String email = decoded.getEmail();
                     String role = (String) decoded.getClaims().get("role");
-
                     // Create User object with email and role
                     var user = new User(email, role);
                     // Create FirebaseAuthentication object with user details
@@ -66,7 +59,23 @@ public class SecurityFilter extends OncePerRequestFilter {
             }
         }
         else {
-            var user = new User("email", "manager");
+            String[] parts = token.split("\\.");
+            if (parts.length != 3) {
+                throw new IllegalArgumentException("Invalid token format");
+            }
+
+            // Base64 decode header and payload parts
+            String header = new String(Base64.getDecoder().decode(parts[0]));
+            String payload = new String(Base64.getDecoder().decode(parts[1]));
+
+            // Parse JSON objects from header and payload
+            Map<String, Object> headerMap = new ObjectMapper().readValue(header, Map.class);
+            Map<String, Object> payloadMap = new ObjectMapper().readValue(payload, Map.class);
+
+            // Extract email and role from payload (assuming claims structure)
+            String email = (String) payloadMap.get("email");
+            String role = (String) payloadMap.get("role");
+            var user = new User(email, role);
             FirebaseAuthentication authentication = new FirebaseAuthentication(user);
             SecurityContext context = SecurityContextHolder.getContext();
             context.setAuthentication(authentication);

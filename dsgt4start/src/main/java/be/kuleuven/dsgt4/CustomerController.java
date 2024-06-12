@@ -50,7 +50,7 @@ public class CustomerController {
     }
 
     @GetMapping("/api/getALLCustomers")
-    public @ResponseBody ResponseEntity<?> getALLCustomers() throws InterruptedException, ExecutionException {
+    public @ResponseBody ResponseEntity<?> getALLCustomers() {
         Logger logger = LoggerFactory.getLogger(this.getClass());
         try{
             var user = WebSecurityConfig.getUser();
