@@ -31,8 +31,6 @@ import java.util.concurrent.ScheduledExecutorService;
 @SpringBootApplication
 public class Dsgt4Application {
 
-	private String jsonConfig = "src/main/resources/dapp4-demo-firebase-adminsdk-r3pa1-8d4be86c34.json";
-
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args)  {
 		System.setProperty("server.port", System.getenv().getOrDefault("PORT", "8080"));
@@ -58,8 +56,8 @@ public class Dsgt4Application {
 		// Initialize Firebase options with credentials
 		if(isProduction()) {
 
-			String projectId = "dapp4-demo";
-			String secretId = "dapp4-demo-firebase-adminsdk-r3pa1-8d4be86c34";
+			String projectId = this.projectId();
+			String secretId = "dapp4-demo-firebase-adminsdk-30rxl-290a4732fa";
 			String versionId = "1";
 
 			try (SecretManagerServiceClient client = SecretManagerServiceClient.create()) {
@@ -80,11 +78,7 @@ public class Dsgt4Application {
 
 		}
 		else {
-			FileInputStream  serviceAccount = new FileInputStream(jsonConfig);
-			FirebaseOptions options = new FirebaseOptions.Builder()
-					.setCredentials(GoogleCredentials.fromStream(serviceAccount))
-					.build();
-            return FirebaseApp.initializeApp(options);
+            return null;
 		}
 	}
 

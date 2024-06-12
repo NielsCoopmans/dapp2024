@@ -1,5 +1,4 @@
-import { setupAuth, wireUpAuthChange } from './auth.js';
-import { wireUpEvents } from './ui.js';
+import { setupAuth, wireUpAuthChange,wireUpEvents } from './auth.js';
 
 setupAuth();
 wireUpAuthChange();
