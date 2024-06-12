@@ -153,10 +153,8 @@ function wireUpAuthChange() {
     }
     auth.currentUser.getIdTokenResult("true").then((idTokenResult) => {
         console.log("Hello " + auth.currentUser.email);
-        console.log("userRole: "+ auth.currentUser.role);
         showAuthenticated(auth.currentUser.email);
         authToken = idTokenResult.token;
-        console.log(authToken);
         fetchData(authToken);
         fetchOrdersByEmail(auth.currentUser.email); // Fetch orders for logged-in user
         document.getElementById('exhaust-list-title').style.display = 'none';

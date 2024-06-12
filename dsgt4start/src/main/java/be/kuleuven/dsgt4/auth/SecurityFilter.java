@@ -1,10 +1,13 @@
 package be.kuleuven.dsgt4.auth;
 
 import be.kuleuven.dsgt4.User;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
+
+import io.jsonwebtoken.JwtParser;
+import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -14,11 +17,20 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.security.Key;
+
 import java.util.*;
 
 @Component
@@ -59,26 +71,34 @@ public class SecurityFilter extends OncePerRequestFilter {
             }
         }
         else {
-            String[] parts = token.split("\\.");
-            if (parts.length != 3) {
-                throw new IllegalArgumentException("Invalid token format");
+            try{
+                // Split the token into its three parts: header, payload, and signature
+                String[] parts = token.split("\\.");
+
+                byte[] payloadBytes = Base64.getUrlDecoder().decode(parts[1]);
+                String payloadString = new String(payloadBytes);
+                ObjectMapper mapper = new ObjectMapper();
+                User user = null;
+                try {
+                    Map<String, Object> payloadMap = mapper.readValue(payloadString, Map.class);
+
+                    // Extract the email from the payload map
+                    String email = (String) payloadMap.get("email");
+                    String role = (String) payloadMap.get("role");
+                    user = new User(email, role);
+                    // Print the extracted email
+                    System.out.println("role: " + role);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+                FirebaseAuthentication authentication = new FirebaseAuthentication(user);
+                SecurityContext context = SecurityContextHolder.getContext();
+                context.setAuthentication(authentication);
+            } catch (Exception e) {
+                System.out.println("Error decoding JWT: " + e.getMessage());
             }
-
-            // Base64 decode header and payload parts
-            String header = new String(Base64.getDecoder().decode(parts[0]));
-            String payload = new String(Base64.getDecoder().decode(parts[1]));
-
-            // Parse JSON objects from header and payload
-            Map<String, Object> headerMap = new ObjectMapper().readValue(header, Map.class);
-            Map<String, Object> payloadMap = new ObjectMapper().readValue(payload, Map.class);
-
-            // Extract email and role from payload (assuming claims structure)
-            String email = (String) payloadMap.get("email");
-            String role = (String) payloadMap.get("role");
-            var user = new User(email, role);
-            FirebaseAuthentication authentication = new FirebaseAuthentication(user);
-            SecurityContext context = SecurityContextHolder.getContext();
-            context.setAuthentication(authentication);
         }
 
 
