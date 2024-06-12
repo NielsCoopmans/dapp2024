@@ -48,12 +48,15 @@ public class OrderController {
         return idCounter.incrementAndGet();
     }
 
+    /*
     @PostMapping("/api/createOrder")
     public ResponseEntity<?> createOrder(@RequestBody Map<String, Object[]> orderData) {
         try {
 
             var user = WebSecurityConfig.getUser();
             String customerEmail = user.getEmail();
+
+
 
             ObjectMapper mapper = new ObjectMapper();
             List<List<Object>> itemsWrapperList = mapper.convertValue(orderData.get("items"), new TypeReference<List<List<Object>>>() {});
@@ -115,7 +118,117 @@ public class OrderController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating order: " + e.getMessage());
         }
+    }*/
+
+    @PostMapping("/api/createOrder")
+    public ResponseEntity<?> createOrder(@RequestBody Map<String, Object[]> orderData) {
+        try {
+            var user = WebSecurityConfig.getUser();
+            String customerEmail = user.getEmail();
+
+            // --- New Code Start ---
+            // Check if the customer already has any orders
+            ResponseEntity<?> existingOrdersResponse = getOrdersByEmail(customerEmail);
+            if (existingOrdersResponse.getStatusCode().is2xxSuccessful()) {
+                List<Order> existingOrders = (List<Order>) existingOrdersResponse.getBody();
+                boolean hasCarOrder = false;
+                boolean hasExhaustOrder = false;
+
+
+                if (existingOrders != null && !existingOrders.isEmpty()) {
+                    for (Order existingOrder : existingOrders) {
+                        for (Item item : existingOrder.getItems()) {
+                            if (item.getPrice() >= 10000) {
+                                hasCarOrder = true;
+                            } else if (item.getPrice() <= 10000) {
+                                hasExhaustOrder = true;
+                            }
+                        }
+                    }
+                }
+
+                ObjectMapper mapper = new ObjectMapper();
+                // Check if the new order contains items already ordered
+                List<List<Object>> itemsWrapperList = mapper.convertValue(orderData.get("items"), new TypeReference<List<List<Object>>>() {});
+                for (List<Object> wrappedItem : itemsWrapperList) {
+                    if (wrappedItem != null && !wrappedItem.isEmpty() && wrappedItem.get(0) instanceof Map) {
+                        Map<String, Object> itemMap = (Map<String, Object>) wrappedItem.get(0);
+                        Item item = mapToItem(itemMap);
+                        if (item.getPrice() >= 10000 && hasCarOrder) {
+                            return ResponseEntity.badRequest().body("You have already ordered an car, you can not order another one at the moment");
+                        } else if (item.getPrice() <= 10000 && hasExhaustOrder) {
+                            return ResponseEntity.badRequest().body("You already have ordered an exhaust, you can not order another one at the moment");
+                        }
+                    }
+                }
+
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error checking existing orders.");
+            }
+            // --- New Code End ---
+
+            ObjectMapper mapper = new ObjectMapper();
+            List<List<Object>> itemsWrapperList = mapper.convertValue(orderData.get("items"), new TypeReference<List<List<Object>>>() {});
+
+            List<Item> items = new ArrayList<>();
+            List<Car> carsList = new ArrayList<>();
+            List<Exhaust> exhaustsList = new ArrayList<>();
+            for (List<Object> wrappedItem : itemsWrapperList) {
+                if (wrappedItem != null && !wrappedItem.isEmpty() && wrappedItem.get(0) instanceof Map) {
+                    Map<String, Object> itemMap = (Map<String, Object>) wrappedItem.get(0);
+                    Item item = mapToItem(itemMap);
+                    if (item instanceof Car) {
+                        items.add(item);
+                        carsList.add((Car) item);
+                    } else if (item instanceof Exhaust) {
+                        items.add(item);
+                        exhaustsList.add((Exhaust) item);
+                    }
+                }
+            }
+
+            if (customerEmail == null) {
+                return ResponseEntity.badRequest().body("Missing required fields: customerEmail");
+            }
+            int id = generateUniqueId();
+            // Create order object
+            Order order = new Order(id, new Customer(customerEmail), items, false, false);
+
+            UUID orderId = UUID.randomUUID();
+            // Save order to Firestore (assuming Ansys Cron is configured for this collection)
+            db.collection("orders").document(orderId.toString()).set(order);
+
+            Car[] cars = carsList.toArray(new Car[0]);
+
+            Exhaust[] exhausts = exhaustsList.toArray(new Exhaust[0]);
+
+            // Reserve items first
+            if (reserveCars(cars) && checkStockExhaust(exhausts)) {
+                // Schedule tasks to order items
+                if (cars.length > 0) {
+                    scheduler.scheduleAtFixedRate(new OrderCarsTask(orderId, cars), 0, 10, TimeUnit.MINUTES);
+                } else {
+                    db.collection("orders").document(orderId.toString()).update("carsCompleted", true);
+                }
+
+                if (exhausts.length > 0) {
+                    scheduler.scheduleAtFixedRate(new OrderExhaustsTask(orderId, exhausts), 0, 10, TimeUnit.MINUTES);
+                } else {
+                    db.collection("orders").document(orderId.toString()).update("exhaustsCompleted", true);
+                }
+
+                return ResponseEntity.ok(order);
+            } else {
+                // Rollback reservations if reservation fails
+                cancelCarReservations(cars);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error reserving items.");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating order: " + e.getMessage());
+        }
     }
+
+
 
     private Item mapToItem(Map<String, Object> itemMap) {
         String name = (String) itemMap.get("name");
