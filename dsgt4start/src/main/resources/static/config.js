@@ -6,12 +6,11 @@ export const firebaseConfig = {
     },
     // Production environment configuration
     production: {
-        apiKey: "AIzaSyDlduNuPpAl43vRXyBIkJoPxJ3QYsxCn4Q",
-        authDomain: "dapp4-demo.firebaseapp.com",
-        projectId: "dapp4-demo",
-        storageBucket: "dapp4-demo.appspot.com",
-        messagingSenderId: "436068667",
-        appId: "1:436068667:web:ddf6b31c48d127c00b971e",
-        measurementId: "G-0NR5TDMD0V"
+        apiKey: "AIzaSyBtQOOAqO4bj_-nl3yZyQLWHmzxbjyZkZE",
+        authDomain: "car-shop-426409.firebaseapp.com",
+        projectId: "car-shop-426409",
+        storageBucket: "car-shop-426409.appspot.com",
+        messagingSenderId: "442266367149",
+        appId: "1:442266367149:web:3ccef029cca87778acc224"
     }
 };

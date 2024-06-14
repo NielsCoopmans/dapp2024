@@ -45,7 +45,7 @@ public class Dsgt4Application {
 	@Bean
 	public String projectId() {
 		if (this.isProduction()) {
-			return "dapp4-demo";
+			return "car-shop-426409";
 		} else {
 			return "demo-distributed-systems-kul";
 		}
@@ -57,7 +57,7 @@ public class Dsgt4Application {
 		if(isProduction()) {
 
 			String projectId = this.projectId();
-			String secretId = "dapp4-demo-firebase-adminsdk-30rxl-290a4732fa";
+			String secretId = "google-cred";
 			String versionId = "1";
 
 			try (SecretManagerServiceClient client = SecretManagerServiceClient.create()) {

@@ -195,7 +195,6 @@ public class OrderController {
             Order order = new Order(id, new Customer(customerEmail), items, false, false);
 
             UUID orderId = UUID.randomUUID();
-            // Save order to Firestore (assuming Ansys Cron is configured for this collection)
             db.collection("orders").document(orderId.toString()).set(order);
 
             Car[] cars = carsList.toArray(new Car[0]);

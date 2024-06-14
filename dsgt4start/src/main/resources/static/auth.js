@@ -22,6 +22,8 @@ let authToken = null;
 let auth = null;
 let isCarsDisplayed = false;
 let isExhaustDisplayed = false;
+let carsInCart = 0;
+let exhaustsInCart = 0;
 
 function setupAuth() {
     let environment  = "";
@@ -135,10 +137,16 @@ function wireUpEvents() {
    cartButton.addEventListener('click', function() {
        if (cartItems.style.display === 'none') {
            cartItems.style.display = 'block';
-           items.style.display = 'none'
+           document.getElementById('car-list').style.display = 'none';
+           document.getElementById('car-list-title').style.display = 'none';
+           document.getElementById('exhaust-list').style.display = 'none';
+           document.getElementById('exhaust-list-title').style.display = 'none';
        } else {
-           items.style.display = 'block'
-           cartItems.style.display = 'none';
+          document.getElementById('car-list').style.display = 'flex';
+          document.getElementById('car-list-title').style.display = 'flex';
+          document.getElementById('exhaust-list').style.display = 'none';
+          document.getElementById('exhaust-list-title').style.display = 'none';
+          cartItems.style.display = 'none';
        }
    });
 }
@@ -227,9 +235,15 @@ function displayCars(cars) {
   });
 
   carList.addEventListener('click', (event) => {
-    if (event.target.classList.contains('add-to-cart-btn')) {
-      const carIndex = event.target.getAttribute('data-index');
-      addToCart(carIndex, carsList);
+    if (carsInCart == 1){
+              alert("Only one Car can be ordered per customer.")
+    }
+    else {
+        if (event.target.classList.contains('add-to-cart-btn')) {
+            carsInCart ++;
+            const carIndex = event.target.getAttribute('data-index');
+            addToCart(carIndex, carsList);
+        }
     }
   });
 }
@@ -284,9 +298,15 @@ function displayExhausts(exhausts) {
   });
 
   exhaustList.addEventListener('click', (event) => {
-    if (event.target.classList.contains('add-to-cart-btn') && !event.target.disabled) {
-      const exhaustIndex = event.target.getAttribute('data-index');
-      addToCart(exhaustIndex, exhaustsList);
+    if (exhaustsInCart == 1) {
+        alert("Only one exhaust can be ordered per customer.")
+    }
+    else {
+        exhaustsInCart ++;
+        if (event.target.classList.contains('add-to-cart-btn') && !event.target.disabled) {
+          const exhaustIndex = event.target.getAttribute('data-index');
+          addToCart(exhaustIndex, exhaustsList);
+        }
     }
   });
 }
@@ -348,9 +368,19 @@ function updateCart() {
             const itemNameToRemove = event.target.dataset.name;
 
             const itemIndex = cart.findIndex(cartItem => cartItem[0].name === itemNameToRemove && cartItem[1] == itemIndexToRemove);
+            const cartItem = cart[itemIndex];
+            const item = cartItem[0];
+
             if (itemIndex !== -1) {
                 cart.splice(itemIndex, 1);
             }
+            if (item.hasOwnProperty('status')){
+                carsInCart--;
+            }
+            else {
+                exhaustsInCart--;
+            }
+
 
             updateCart();
         });
@@ -439,7 +469,7 @@ async function createCustomer(email) {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
+          'Authorization': 'Bearer ${authToken}'
       },
       body: JSON.stringify(customerData)
   })
@@ -450,10 +480,11 @@ async function createCustomer(email) {
 
 async function fetchOrdersByEmail(email) {
   console.log("fetching orders by email:", email);
+  const url = '/api/getOrdersByEmail/' + email;
   try {
-    const response = await fetch(`/api/getOrdersByEmail/${email}`, {
+    const response = await fetch(url, {
       method: 'GET',
-      headers: { Authorization: `Bearer ${authToken}` }
+      headers: { 'Authorization': `Bearer ${authToken}` }
     });
 
     if (response.ok) {
@@ -495,4 +526,4 @@ function refreshPage() {
 
 
 
-export { setupAuth, authToken, wireUpAuthChange, auth, wireUpEvents};
+export { setupAuth, wireUpAuthChange, wireUpEvents };

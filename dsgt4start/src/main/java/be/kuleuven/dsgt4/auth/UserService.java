@@ -14,6 +14,9 @@ import java.util.Map;
 @Service
 public class UserService {
 
+    //@Autowired
+    FirebaseApp firebaseApp;
+
     @Autowired
     Boolean isProduction;
 

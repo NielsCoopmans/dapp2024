@@ -202,7 +202,7 @@
 				<version>2.4.4</version>
 				<configuration>
 					<version>1</version>
-					<projectId>dapp4-demo</projectId>
+					<projectId>car-shop-426409</projectId>
 					<cloudSdkVersion>472.0.0</cloudSdkVersion>
 					<cloudSdkHome>/home/niels/Downloads/google-cloud-sdk</cloudSdkHome>
 				</configuration>

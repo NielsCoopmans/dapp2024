@@ -2,6 +2,7 @@ package be.kuleuven.dsgt4.auth;
 
 import be.kuleuven.dsgt4.User;
 
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
@@ -35,8 +36,13 @@ import java.util.*;
 
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
+
+
     @Autowired
     Boolean isProduction;
+
+    //@Autowired
+    FirebaseApp firebaseApp;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -82,12 +88,10 @@ public class SecurityFilter extends OncePerRequestFilter {
                 try {
                     Map<String, Object> payloadMap = mapper.readValue(payloadString, Map.class);
 
-                    // Extract the email from the payload map
                     String email = (String) payloadMap.get("email");
                     String role = (String) payloadMap.get("role");
                     user = new User(email, role);
-                    // Print the extracted email
-                    System.out.println("role: " + role);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
