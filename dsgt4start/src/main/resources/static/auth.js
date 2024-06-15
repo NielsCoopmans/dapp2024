@@ -388,6 +388,11 @@ function updateCart() {
 }
 
 function placeOrder() {
+    if (!exhaustsInCart or !carsInCart){
+        alert("This service is meant for package deals only, please order a car and an exhaust.");
+        return;
+    }
+
     if (cart.length === 0) {
         alert('Your cart is empty.');
         return;
