@@ -131,17 +131,17 @@ public class OrderController {
             ResponseEntity<?> existingOrdersResponse = getOrdersByEmail(customerEmail);
             if (existingOrdersResponse.getStatusCode().is2xxSuccessful()) {
                 List<Order> existingOrders = (List<Order>) existingOrdersResponse.getBody();
-                boolean hasCarOrder = false;
-                boolean hasExhaustOrder = false;
+                boolean hasExistingCarOrder = false;
+                boolean hasExistingExhaustOrder = false;
 
 
                 if (existingOrders != null && !existingOrders.isEmpty()) {
                     for (Order existingOrder : existingOrders) {
                         for (Item item : existingOrder.getItems()) {
                             if (item.getPrice() >= 10000) {
-                                hasCarOrder = true;
+                                hasExistingCarOrder = true;
                             } else if (item.getPrice() <= 10000) {
-                                hasExhaustOrder = true;
+                                hasExistingExhaustOrder = true;
                             }
                         }
                     }
@@ -154,9 +154,9 @@ public class OrderController {
                     if (wrappedItem != null && !wrappedItem.isEmpty() && wrappedItem.get(0) instanceof Map) {
                         Map<String, Object> itemMap = (Map<String, Object>) wrappedItem.get(0);
                         Item item = mapToItem(itemMap);
-                        if (item.getPrice() >= 10000 && hasCarOrder) {
+                        if (item.getPrice() >= 10000 && hasExistingCarOrder) {
                             return ResponseEntity.badRequest().body("You have already ordered an car, you can not order another one at the moment");
-                        } else if (item.getPrice() <= 10000 && hasExhaustOrder) {
+                        } else if (item.getPrice() <= 10000 && hasExistingExhaustOrder) {
                             return ResponseEntity.badRequest().body("You already have ordered an exhaust, you can not order another one at the moment");
                         }
                     }
@@ -165,7 +165,8 @@ public class OrderController {
             } else {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error checking existing orders.");
             }
-            // --- New Code End ---
+            boolean hasCarOrder = false;
+            boolean hasExhaustOrder = false;
 
             ObjectMapper mapper = new ObjectMapper();
             List<List<Object>> itemsWrapperList = mapper.convertValue(orderData.get("items"), new TypeReference<List<List<Object>>>() {});
@@ -178,15 +179,20 @@ public class OrderController {
                     Map<String, Object> itemMap = (Map<String, Object>) wrappedItem.get(0);
                     Item item = mapToItem(itemMap);
                     if (item instanceof Car) {
+                        hasCarOrder = true;
                         items.add(item);
                         carsList.add((Car) item);
                     } else if (item instanceof Exhaust) {
+                        hasExhaustOrder = true;
                         items.add(item);
                         exhaustsList.add((Exhaust) item);
                     }
                 }
             }
 
+            if (!hasExhaustOrder || !hasCarOrder){
+                return ResponseEntity.badRequest().body("This service is meant for package deals only, please order a car and an exhaust.");
+            }
             if (customerEmail == null) {
                 return ResponseEntity.badRequest().body("Missing required fields: customerEmail");
             }
@@ -195,6 +201,7 @@ public class OrderController {
             Order order = new Order(id, new Customer(customerEmail), items, false, false);
 
             UUID orderId = UUID.randomUUID();
+            // Save order to Firestore (assuming Ansys Cron is configured for this collection)
             db.collection("orders").document(orderId.toString()).set(order);
 
             Car[] cars = carsList.toArray(new Car[0]);
@@ -316,35 +323,35 @@ public class OrderController {
 
     public boolean orderCars(Car[] cars) {
         for(Car car: cars) {
-             try {
-                 supplierServiceCar.orderCar(car.getId());
-             } catch (Exception e) {
-                 System.out.println("error ordering cars: "+ car +" "+ e.getMessage());
-                 return false;
-             }
+            try {
+                supplierServiceCar.orderCar(car.getId());
+            } catch (Exception e) {
+                System.out.println("error ordering cars: "+ car +" "+ e.getMessage());
+                return false;
+            }
         }
         return true;
     }
 
     public boolean reserveCars(Car[] cars) {
         for(Car car: cars) {
-             try {
-                 supplierServiceCar.reserveCar(car.getId());
-             } catch (Exception e) {
-                 System.out.println("error reserving cars: "+ car +" "+ e.getMessage());
-                 return false;
-             }
+            try {
+                supplierServiceCar.reserveCar(car.getId());
+            } catch (Exception e) {
+                System.out.println("error reserving cars: "+ car +" "+ e.getMessage());
+                return false;
+            }
         }
         return true;
     }
 
     public void cancelCarReservations(Car[] cars) {
         for(Car car: cars) {
-             try {
-                 supplierServiceCar.cancelCar(car.getId());
-             } catch (Exception e) {
-                 System.out.println("error cancelling cars: "+ car +" "+ e.getMessage());
-             }
+            try {
+                supplierServiceCar.cancelCar(car.getId());
+            } catch (Exception e) {
+                System.out.println("error cancelling cars: "+ car +" "+ e.getMessage());
+            }
         }
     }
 
@@ -455,4 +462,3 @@ public class OrderController {
         }
     }
 }
-
