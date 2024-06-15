@@ -7,8 +7,9 @@ public class User {
 
     public User(String email, String role) {
         this.email = email;
-        this.role = "test";
+        this.role = role;
     }
+
 
     public String getEmail() {
         return email;

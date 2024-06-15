@@ -126,51 +126,11 @@ public class OrderController {
             var user = WebSecurityConfig.getUser();
             String customerEmail = user.getEmail();
 
-            // --- New Code Start ---
-            // Check if the customer already has any orders
-            ResponseEntity<?> existingOrdersResponse = getOrdersByEmail(customerEmail);
-            if (existingOrdersResponse.getStatusCode().is2xxSuccessful()) {
-                List<Order> existingOrders = (List<Order>) existingOrdersResponse.getBody();
-                boolean hasExistingCarOrder = false;
-                boolean hasExistingExhaustOrder = false;
-
-
-                if (existingOrders != null && !existingOrders.isEmpty()) {
-                    for (Order existingOrder : existingOrders) {
-                        for (Item item : existingOrder.getItems()) {
-                            if (item.getPrice() >= 10000) {
-                                hasExistingCarOrder = true;
-                            } else if (item.getPrice() <= 10000) {
-                                hasExistingExhaustOrder = true;
-                            }
-                        }
-                    }
-                }
-
-                ObjectMapper mapper = new ObjectMapper();
-                // Check if the new order contains items already ordered
-                List<List<Object>> itemsWrapperList = mapper.convertValue(orderData.get("items"), new TypeReference<List<List<Object>>>() {});
-                for (List<Object> wrappedItem : itemsWrapperList) {
-                    if (wrappedItem != null && !wrappedItem.isEmpty() && wrappedItem.get(0) instanceof Map) {
-                        Map<String, Object> itemMap = (Map<String, Object>) wrappedItem.get(0);
-                        Item item = mapToItem(itemMap);
-                        if (item.getPrice() >= 10000 && hasExistingCarOrder) {
-                            return ResponseEntity.badRequest().body("You have already ordered an car, you can not order another one at the moment");
-                        } else if (item.getPrice() <= 10000 && hasExistingExhaustOrder) {
-                            return ResponseEntity.badRequest().body("You already have ordered an exhaust, you can not order another one at the moment");
-                        }
-                    }
-                }
-
-            } else {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error checking existing orders.");
-            }
+            ObjectMapper mapper = new ObjectMapper();
+            // Check if the new order contains items already ordered
+            List<List<Object>> itemsWrapperList = mapper.convertValue(orderData.get("items"), new TypeReference<List<List<Object>>>() {});
             boolean hasCarOrder = false;
             boolean hasExhaustOrder = false;
-
-            ObjectMapper mapper = new ObjectMapper();
-            List<List<Object>> itemsWrapperList = mapper.convertValue(orderData.get("items"), new TypeReference<List<List<Object>>>() {});
-
             List<Item> items = new ArrayList<>();
             List<Car> carsList = new ArrayList<>();
             List<Exhaust> exhaustsList = new ArrayList<>();
@@ -389,38 +349,34 @@ public class OrderController {
     public ResponseEntity<?> getAllOrders() {
         Logger logger = LoggerFactory.getLogger(this.getClass());
         try {
-            // Check user authorization
             var user = WebSecurityConfig.getUser();
             if (!user.isManager()) {
                 throw new AuthorizationServiceException("You are not a manager");
             }
-
-            Map<String, Order> orders = new HashMap();
-            ApiFuture<QuerySnapshot> query = db.collection("orders").get();
+            ApiFuture<QuerySnapshot> query = db.collection("orders")
+                    .get();
             QuerySnapshot querySnapshot = query.get();
             List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
 
+            List<Order> orders = new ArrayList<>();
             Gson gson = new Gson();
             Type customerType = new TypeToken<Customer>() {}.getType();
             Type itemListType = new TypeToken<List<Item>>() {}.getType();
 
             for (QueryDocumentSnapshot document : documents) {
-                Customer customer = gson.fromJson(gson.toJson(document.get("customer")),customerType);
+                Customer customer = gson.fromJson(gson.toJson(document.get("customer")), customerType);
                 List<Item> items = gson.fromJson(gson.toJson(document.get("items")), itemListType);
-                Boolean completed = document.getBoolean("carsCompleted");
-                Boolean exhaustCompleted = document.getBoolean("exhaustCompleted");
-                int id = document.get("id",Integer.TYPE);
-                Order order = new Order(id,customer, items, Boolean.TRUE.equals(completed), Boolean.TRUE.equals(exhaustCompleted));
-                orders.put(document.getId(),order);
+                Boolean carsCompleted = document.getBoolean("carsCompleted");
+                Boolean exhaustsCompleted = document.getBoolean("exhaustsCompleted");
+                int id = document.get("id", Integer.TYPE);
+                Order order = new Order(id, customer, items, Boolean.TRUE.equals(carsCompleted), Boolean.TRUE.equals(exhaustsCompleted));
+                orders.add(order);
             }
 
             return ResponseEntity.ok(orders);
         } catch (InterruptedException | ExecutionException e) {
             logger.error("Error fetching orders", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching orders: " + e.getMessage());
-        } catch (AuthorizationServiceException e) {
-            logger.error("Authorization error", e);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Authorization error: " + e.getMessage());
         } catch (Exception e) {
             logger.error("Unexpected error", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error: " + e.getMessage());
@@ -431,6 +387,10 @@ public class OrderController {
     public ResponseEntity<?> getOrdersByEmail(@PathVariable String email) {
         Logger logger = LoggerFactory.getLogger(this.getClass());
         try {
+            var user = WebSecurityConfig.getUser();
+            if (user.isManager()) {
+                return getAllOrders();
+            }
             ApiFuture<QuerySnapshot> query = db.collection("orders")
                     .whereEqualTo("customer.email", email)
                     .get();
@@ -450,7 +410,7 @@ public class OrderController {
                 int id = document.get("id", Integer.TYPE);
                 Order order = new Order(id, customer, items, Boolean.TRUE.equals(carsCompleted), Boolean.TRUE.equals(exhaustsCompleted));
                 orders.add(order);
-            }
+            } 
 
             return ResponseEntity.ok(orders);
         } catch (InterruptedException | ExecutionException e) {

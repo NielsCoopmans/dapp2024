@@ -15,15 +15,13 @@ import {
   collection,
   getDocs
 } from "https://www.gstatic.com/firebasejs/9.9.4/firebase-firestore.js";
-import { firebaseConfig } from './config.js'; // Assuming firebaseConfig is defined in a separate config file
+import { firebaseConfig } from './config.js';
 import { showAuthenticated, showUnAuthenticated } from './utils.js';
 
 let authToken = null;
 let auth = null;
 let isCarsDisplayed = false;
 let isExhaustDisplayed = false;
-let carsInCart = 0;
-let exhaustsInCart = 0;
 
 function setupAuth() {
     let environment  = "";
@@ -160,7 +158,6 @@ function wireUpAuthChange() {
       return;
     }
     auth.currentUser.getIdTokenResult("true").then((idTokenResult) => {
-        console.log("Hello " + auth.currentUser.email);
         showAuthenticated(auth.currentUser.email);
         authToken = idTokenResult.token;
         fetchData(authToken);
@@ -235,15 +232,9 @@ function displayCars(cars) {
   });
 
   carList.addEventListener('click', (event) => {
-    if (carsInCart == 1){
-              alert("Only one Car can be ordered per customer.")
-    }
-    else {
-        if (event.target.classList.contains('add-to-cart-btn')) {
-            carsInCart ++;
-            const carIndex = event.target.getAttribute('data-index');
-            addToCart(carIndex, carsList);
-        }
+    if (event.target.classList.contains('add-to-cart-btn')) {
+        const carIndex = event.target.getAttribute('data-index');
+        addToCart(carIndex, carsList);
     }
   });
 }
@@ -298,15 +289,9 @@ function displayExhausts(exhausts) {
   });
 
   exhaustList.addEventListener('click', (event) => {
-    if (exhaustsInCart == 1) {
-        alert("Only one exhaust can be ordered per customer.")
-    }
-    else {
-        exhaustsInCart ++;
-        if (event.target.classList.contains('add-to-cart-btn') && !event.target.disabled) {
-          const exhaustIndex = event.target.getAttribute('data-index');
-          addToCart(exhaustIndex, exhaustsList);
-        }
+    if (event.target.classList.contains('add-to-cart-btn') && !event.target.disabled) {
+      const exhaustIndex = event.target.getAttribute('data-index');
+      addToCart(exhaustIndex, exhaustsList);
     }
   });
 }
@@ -374,24 +359,12 @@ function updateCart() {
             if (itemIndex !== -1) {
                 cart.splice(itemIndex, 1);
             }
-            if (item.hasOwnProperty('status')){
-                carsInCart--;
-            }
-            else {
-                exhaustsInCart--;
-            }
-
-
             updateCart();
         });
     });
 }
 
 function placeOrder() {
-    if (!exhaustsInCart or !carsInCart){
-        alert("This service is meant for package deals only, please order a car and an exhaust.");
-        return;
-    }
 
     if (cart.length === 0) {
         alert('Your cart is empty.');
@@ -401,8 +374,6 @@ function placeOrder() {
     const orderData = {
         items: cart
     };
-
-    console.log("Order data:", orderData);
 
     fetch('/api/createOrder', {
         method: 'POST',
@@ -414,7 +385,16 @@ function placeOrder() {
     })
     .then(response => {
         if (!response.ok) {
-            return response.json().then(err => Promise.reject(err));
+            return response.text().then(text => { // Use text() for plain text error messages
+                if (text.includes("package deals only")) {
+                    // Handle package deal error specifically
+                    alert("Sorry, this service requires car and exhaust together. Please adjust your order.");
+                    return Promise.reject(new Error(text)); // Reject with the full error message
+                } else {
+                    alert('There was an error placing your order. Please try again.');
+                    return Promise.reject(new Error(text)); // Reject with the extracted text
+                }
+            });
         }
         return response.json();
     })
@@ -426,7 +406,6 @@ function placeOrder() {
     })
     .catch(error => {
         console.error('Error placing order:', error);
-        alert('There was an error placing your order. Please try again.');
         refreshPage();
     });
     fetchOrdersByEmail(auth.currentUser.email);
@@ -438,7 +417,7 @@ async function fetchCustomers(token) {
   try {
     const response = await fetch('/api/getALLCustomers', {
       method: 'GET',
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { 'Authorization': `Bearer ${token}` }
     });
 
     if (response.ok) {
@@ -474,7 +453,7 @@ async function createCustomer(email) {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${authToken}'
+           'Authorization': `Bearer ${authToken}`
       },
       body: JSON.stringify(customerData)
   })
@@ -489,12 +468,11 @@ async function fetchOrdersByEmail(email) {
   try {
     const response = await fetch(url, {
       method: 'GET',
-      headers: { 'Authorization': `Bearer ${authToken}` }
+      headers: { Authorization: `Bearer ${authToken}` }
     });
 
     if (response.ok) {
       const orders = await response.json();
-      console.log(orders);
       displayOrders(orders);
     } else {
       console.error('Failed to fetch orders:', response.statusText);

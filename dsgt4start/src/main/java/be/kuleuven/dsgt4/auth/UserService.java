@@ -14,7 +14,8 @@ import java.util.Map;
 @Service
 public class UserService {
 
-    //@Autowired
+
+    @Autowired
     FirebaseApp firebaseApp;
 
     @Autowired
@@ -50,6 +51,5 @@ public class UserService {
         claims.put("role", role);
 
         FirebaseAuth.getInstance().setCustomUserClaims(userRecord.getUid(), claims);
-        System.out.println("User " + email + " created/updated with role " + role);
     }
 }
