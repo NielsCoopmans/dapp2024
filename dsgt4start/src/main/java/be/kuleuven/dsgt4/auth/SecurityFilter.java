@@ -34,8 +34,8 @@ public class SecurityFilter extends OncePerRequestFilter {
     @Autowired
     Boolean isProduction;
 
-    @Autowired
-    FirebaseApp firebaseApp;
+    //@Autowired
+    //FirebaseApp firebaseApp;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
